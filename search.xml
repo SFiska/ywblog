@@ -2,7 +2,7 @@
 <search>
   <entry>
     <title>用户、组和权限</title>
-    <url>/posts/ab706382/</url>
+    <url>/posts/bca3897f/</url>
     <content><![CDATA[
 用户、组和权限
 内容概述
@@ -459,7 +459,7 @@ setfacl --set u::rw,u:wang:rw,g::r,o::- file1
         <category>运维</category>
       </categories>
       <tags>
-        <tag>Mysql</tag>
+        <tag>运维笔记</tag>
       </tags>
   </entry>
 </search>
