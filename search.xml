@@ -1,0 +1,1002 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>文件管理和IO重定向</title>
+    <url>/posts/43d26e1b/</url>
+    <content><![CDATA[
+文件管理和IO重定向
+内容概述:
+文件系统目录结构
+创建和查看文件
+复制、转移和删除文件
+软和硬链接
+IO重定向和管道
+文件系统目录结构
+
+文件系统的目录结构
+文件和目录被组织成一个单根倒置树结构
+文件系统从根目录下开始，用“/”表示
+根文件系统(rootfs)：root filesystem
+标准Linux文件系统（如：ext4），文件名称大小写敏感，例如：MAIL, Mail, mail, mAiL
+以 . 开头的文件为隐藏文件
+路径分隔的 /
+文件名最长255个字节
+包括路径在内文件名称最长4095个字节
+蓝色--&gt;目录 绿色--&gt;可执行文件 红色--&gt;压缩文件 浅蓝色--&gt;链接文件 灰色--&gt;其他文件
+除了斜杠和NUL,所有字符都有效.但使用特殊字符的目录名和文件不推荐使用，有些字符需要用引号来引用
+每个文件都有两类相关数据：元数据：metadata，即属性， 数据：data，即文件内容
+Linux的文件系统分层结构：FHS Filesystem Hierarchy Standard
+常见的文件系统目录功能
+/boot：引导文件存放目录，内核文件(vmlinuz)、引导加载器(bootloader, grub)都存放于此目录
+/bin：所有用户使用的基本命令；不能关联至独立分区，OS启动即会用到的程序
+/sbin：管理类的基本命令；不能关联至独立分区，OS启动即会用到的程序
+/lib：启动时程序依赖的基本共享库文件以及内核模块文件(/lib/modules)
+/lib64：专用于x86_64系统上的辅助共享库文件存放位置
+/etc：配置文件目录
+/home/USERNAME：普通用户家目录
+/root：管理员的家目录
+/media：便携式移动设备挂载点
+/mnt：临时文件系统挂载点
+/dev：设备文件及特殊文件存储位置
+b: block device，随机访问
+c: character device，线性访问
+/opt：第三方应用程序的安装位置
+/srv：系统上运行的服务用到的数据
+/tmp：临时文件存储位置
+/usr: universal shared, read-only data
+bin: 保证系统拥有完整功能而提供的应用程序
+sbin:
+lib：32位使用
+lib64：只存在64位系统
+include: C程序的头文件(header files)
+share：结构化独立的数据，例如doc, man等
+​      local：第三方应用程序的安装位置
+​        bin, sbin, lib, lib64, etc, share
+/var: variable data files
+cache: 应用程序缓存数据目录
+lib: 应用程序状态信息数据
+local：专用于为/usr/local下的应用程序存储可变数据
+lock: 锁文件
+log: 日志目录及文件
+opt: 专用于为/opt下的应用程序存储可变数据
+run: 运行中的进程相关数据,通常用于存储进程pid文件
+spool: 应用程序数据池
+tmp: 保存系统两次重启之间产生的临时数据
+/proc: 用于输出内核与进程信息相关的虚拟文件系统
+/sys：用于输出当前系统上硬件设备相关信息虚拟文件系统
+/selinux: security enhanced Linux，selinux相关的安全策略等信息的存储位置
+应用程序的组成部分
+二进制程序：/bin, /sbin, /usr/bin, /usr/sbin, /usr/local/bin, /usr/local/sbin
+库文件：/lib, /lib64, /usr/lib, /usr/lib64, /usr/local/lib, /usr/local/lib64
+配置文件：/etc, /etc/DIRECTORY, /usr/local/etc
+帮助文件：/usr/share/man, /usr/share/doc, /usr/local/share/man,
+/usr/local/share/doc
+Linux下的文件类型
+- 普通文件
+d 目录文件directory
+l 符号链接文件link
+b 块设备block
+c 字符设备character
+p 管道文件pipe
+s 套接字文件socket
+[root@centos7 ~]#ls -l /run/drwxr-xr-x 2 root      root      100 Dec 9 20:41 abrt-rw------- 1 root      root       11 Dec 9 20:41 alsactl.pidprw------- 1 root      root       0 Dec 9 20:41 autofs.fifo-netsrw-rw-rw- 1 root      root       0 Dec 9 20:41 gssproxy.sock
+文件操作命令
+显示当前工作目录
+每个shell和系统进程都有一个当前的工作目录 CWD：current work directory
+显示当前shell CWD的绝对路径
+pwd命令: printing working directory
+-P 显示真实物理路径
+-L 显示链接路径（默认）
+绝对和相对路径
+绝对路径
+以正斜杠/ 即根目录开始
+完整的文件的位置路径
+可用于任何想指定一个文件名的时候
+相对路径名
+不以斜线开始
+一般情况下，是指相对于当前工作目录的路径，特殊场景下，是相对于某目录的位置
+可以作为一个简短的形式指定一个文件名
+基名：basename，只取文件名而不要路径
+目录名：dirname，只取路径，不要文件名
+范例:
+[root@centos8 bin]#basename /etc/sysconfig/networknetwork[root@centos8 bin]#dirname /etc/sysconfig/network/etc/sysconfig[root@centos8 ~]#dirname /etc/sysconfig/network-scripts/ifcfg-eth0/etc/sysconfig/network-scripts[root@centos8 ~]#basename /etc/sysconfig/network-scripts/ifcfg-eth0ifcfg-eth0[root@ubuntu2004 ~]#basename http://nginx.org/download/nginx-1.18.0.tar.gznginx-1.18.0.tar.gz[root@ubuntu2004 ~]#basename http://nginx.org/download/nginx-1.18.0.tar.gz .tar.gznginx-1.18.0[root@ubuntu2004 ~]#basename -s .tar.gz http://nginx.org/download/nginx-1.18.0.tar.gz nginx-1.18.0[root@ubuntu2004 ~]#url=http://nginx.org/download/nginx-1.18.0.tar.gz[root@ubuntu2004 ~]#echo $urlhttp://nginx.org/download/nginx-1.18.0.tar.gz[root@ubuntu2004 ~]#basename $urlnginx-1.18.0.tar.gz
+更改目录
+命令 cd ： change directory 改变目录
+选项：-P 切换至物理路径，而非软链接目录
+可以使用绝对或相对路径
+切换至父目录： cd …
+切换至当前用户主目录： cd
+切换至以前的工作目录： cd -
+范例：
+[root@centos8 ~]#cd /etc/sysconfig[root@centos8 sysconfig]#pwd/etc/sysconfig[root@centos8 sysconfig]#cd ../../data[root@centos8 data]#pwd/data[root@centos8 data]#cd /bin[root@centos8 bin]#pwd/bin[root@centos8 bin]#cd -P /bin [root@centos8 bin]#pwd/usr/bin
+相关的环境变量：
+PWD：当前目录路径
+OLDPWD：上一次目录路径
+范例：
+[root@centos8 ~]#echo $OLDPWD/etc/sysconfig[root@centos8 ~]#cd -/etc/sysconfig[root@centos8 sysconfig]#pwd/etc/sysconfig[root@centos8 sysconfig]#
+列出目录内容
+ls 命令可以列出当前目录的内容或指定目录
+用法：
+ls [options] [files_or_dirs]
+常见选项：
+-a 包含隐藏文件-l 显示额外的信息-R 目录递归-ld 目录和符号链接信息-1 文件分行显示-S 按从大到小排序-t 按mtime排序-u 配合-t选项，显示并按atime从新到旧排序-U 按目录存放顺序显示-X 按文件后缀排序-F 对不同类型文件显示时附加不同的符号：*/=&gt;@|-C 文件多时，以多列的方式显示文件，默认是一列（标准输出）
+
+ls 查看不同后缀文件时的颜色由 /etc/DIR_COLORS 和@LS_COLORS变量定义
+ls -l 看到文件的大小,不一定是实际文件真正占用空间的大小
+
+[root@centos8 ~]#vim /etc/DIR_COLORS.jpg 01;31 #修改此行[root@centos8 ~]#exit [root@centos8 ~]#echo $LS_COLORSrs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=01;05;37;41:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;31:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=01;36:*.au=01;36:*.flac=01;36:*.m4a=01;36:*.mid=01;36:*.midi=01;36:*.mka=01;36:*.mp3=01;36:*.mpc=01;36:*.ogg=01;36:*.ra=01;36:*.wav=01;36:*.oga=01;36:*.opus=01;36:*.spx=01;36:*.xspf=01;36:
+范例：别名ll
+[root@centos8 ~]#alias llalias ll=&#x27;ls -l --color=auto&#x27;[root@ubuntu ~]#alias llalias ll=&#x27;ls -alF&#x27;
+查看文件状态 stat
+文件相关信息：metadata, data
+每个文件有三个时间戳：
+access time 访问时间，atime，读取文件内容
+modify time 修改时间，mtime，改变文件内容（数据）
+change time 改变时间，ctime，元数据发生改变
+[root@centos8 ~]#stat /etc/passwd File: /etc/passwd Size: 1306   Blocks: 8     IO Block: 4096  regular fileDevice: 802h/2050d Inode: 134792556  Links: 1Access: (0644/-rw-r--r--) Uid: (  0/  root)  Gid: (  0/  root)Access: 2019-12-09 20:37:12.830991350 +0800Modify: 2019-12-09 20:37:12.826991351 +0800Change: 2019-12-09 20:37:12.826991351 +0800 Birth: -
+确定文件内容
+文件可以包含多种类型的数据，使用file命令检查文件的类型，然后确定适当的打开命令或应用程序使用
+格式：
+file [options] &lt;filename&gt;...
+常用选项:
+-b 列出文件辨识结果时，不显示文件名称-f filelist 列出文件filelist中文件名的文件类型-F 使用指定分隔符号替换输出文件名后默认的”:”分隔符-L 查看对应软链接对应文件的文件类型--help 显示命令在线帮助
+范例：windows的文本格式和Linux的文本格式的区别
+[root@centos8 data]#cat linux.txtabc[root@centos8 data]#cat win.txtabc[root@centos8 data]#file win.txt linux.txtwin.txt:  ASCII text, with CRLF line terminatorslinux.txt: ASCII text[root@centos8 data]#hexdump -C linux.txt00000000 61 0a 62 0a 63 0a                 |a.b.c.|00000006[root@centos8 data]#hexdump -C win.txt00000000 61 0d 0a 62 0d 0a 63               |a..b..c|00000007#安装转换工具[root@centos8 data]#dnf -y install dos2unix#将Windows的文本格式转换成的Linux文本格式[root@centos8 data]#dos2unix win.txtdos2unix: converting file win.txt to Unix format...[root@centos8 data]#file win.txtwin.txt: ASCII text#将Linux的文本格式转换成Windows的文本格式[root@centos8 data]#unix2dos win.txtunix2dos: converting file win.txt to DOS format...[root@centos8 data]#file win.txtwin.txt: ASCII text, with CRLF line terminators
+范例：转换文件字符集编码
+#显示支持字符集编码列表[root@centos8 ~]#iconv -l#windows7上文本默认的编码ANSI（GB2312）[root@centos8 data]#file windows.txtwindows.txt: ISO-8859 text, with no line terminators[root@centos8 data]#echo $LANGen_US.UTF-8#默认在linux无法正常显示文本内容[root@centos8 data]#cat windows.txt[root@centos8 data]##将windows7上文本默认的编码ANSI（GB2312）转换成UTF-8[root@centos8 data]#iconv -f gb2312 windows.txt -o windows1.txt[root@centos8 data]#cat windows1.txt马哥教育[root@centos8 data]#ll windows1.txt-rw-r--r-- 1 root root 12 Mar 23 10:13 windows1.txt[root@centos8 data]#file windows1.txtwindows1.txt: UTF-8 Unicode text, with no line terminators#将UTF-8转换成windows10上文本默认的编码ANSI（GB2312）[root@centos8 data]#iconv -f utf8 -t gb2312 windows1.txt -o windows2.txt[root@centos8 data]#file windows2.txtwindows2.txt: ISO-8859 text, with no line terminators
+范例:
+[15:34:50 root@centos8 ~]#file linux.txtlinux.txt: ASCII text[15:34:31 root@centos8 ~]#file windows.txt windows.txt: ASCII text, with CRLF line terminators#将windows的文本格式转换成Linux的文本格式[15:35:26 root@centos8 ~]#dos2unix windows.txt dos2unix: converting file windows.txt to Unix format...[15:36:00 root@centos8 ~]#file windows.txtwindows.txt: ASCII text
+范例：
+[root@centos8 ~]#cat list.txt /etc//bin/etc/issue[root@centos8 ~]#file -f list.txt/etc/:   directory/bin:    symbolic link to usr/bin/etc/issue: ASCII text
+🌟文件通配符模式wildcard pattern
+文件通配符可以用来匹配符合条件的多个文件，方便批量管理文件
+通配符采有特定的符号，表示特定的含义，此特符号称为元 meta 字符
+常见的通配符如下：
+* 匹配零个或多个字符，但不匹配 &quot;.&quot; 开头的文件，即隐藏文件? 匹配任何单个字符,一个汉字也算一个字符~ 当前用户家目录~mage 用户mage家目录[0-9] 匹配数字范围[a-z] 一个字母[A-Z] 一个字母[wang] 匹配列表中的任何的一个字符[^wang] 匹配列表中的所有字符以外的字符[^a-z] 匹配列表中的所有字符以外的字符. 和 ~+ 当前工作目录~-  前一个工作目录
+另外还有在Linux系统中预定义的字符类表示法如下：man 7 glob
+[:digit:]：任意数字，相当于0-9[:lower:]：任意小写字母,表示 a-z[:upper:]: 任意大写字母,表示 A-Z [:alpha:]: 任意大小写字母[:alnum:]：任意数字或字母[:blank:]：水平空白字符[:space:]：水平或垂直空白字符[:punct:]：标点符号[:print:]：可打印字符[:cntrl:]：控制（非打印）字符[:graph:]：图形字符[:xdigit:]：十六进制字符
+范例: [ ] 和 { }
+[root@centos8 data]#ll f&#123;1..5&#125;ls: cannot access &#x27;f1&#x27;: No such file or directoryls: cannot access &#x27;f2&#x27;: No such file or directory-rw-r--r-- 1 root root 0 Nov 7 09:34 f3-rw-r--r-- 1 root root 0 Nov 7 09:34 f4-rw-r--r-- 1 root root 0 Nov 7 09:34 f5[root@centos8 data]#ll f[1-5]-rw-r--r-- 1 root root 0 Nov 7 09:34 f3-rw-r--r-- 1 root root 0 Nov 7 09:34 f4-rw-r--r-- 1 root root 0 Nov 7 09:34 f5[root@centos8 data]#ll f[a-c]-rw-r--r-- 1 root root 0 Nov 7 09:46 fa-rw-r--r-- 1 root root 0 Nov 7 09:46 fA-rw-r--r-- 1 root root 0 Nov 7 09:46 fb-rw-r--r-- 1 root root 0 Nov 7 09:46 fB-rw-r--r-- 1 root root 0 Nov 7 09:46 fc[root@centos8 data]#ll f&#123;a..c&#125;-rw-r--r-- 1 root root 0 Nov 7 09:46 fa-rw-r--r-- 1 root root 0 Nov 7 09:46 fb-rw-r--r-- 1 root root 0 Nov 7 09:46 fc
+范例：
+[root@centos8 data]#touch file&#123;a..z&#125;.txt file&#123;A..Z&#125;.txt file&#123;0..9&#125;.txt[root@centos8 data]#ll file&#123;0..9&#125;.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file0.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file1.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file2.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file3.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file4.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file5.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file6.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file7.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file8.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file9.txt[root@centos8 data]#ll file[0-9].txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file0.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file1.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file2.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file3.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file4.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file5.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file6.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file7.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file8.txt-rw-r--r-- 1 root root 0 Mar 23 10:46 file9.txt[root@centos8 data]#ls file[a-c].txtfilea.txt fileA.txt fileb.txt fileB.txt filec.txt[root@centos8 data]#ls file[C-E].txtfileC.txt filed.txt fileD.txt filee.txt fileE.txt[root@centos8 data]#ls file[wang].txtfilea.txt fileg.txt filen.txt filew.txt[root@centos8 data]#ls file[^wang].txt
+范例：
+[root@centos8 data]#ls file[:lower:].txtfilee.txt filel.txt fileo.txt filer.txt filew.txt[root@centos8 data]#ls file[[:lower:]].txtfilea.txt filed.txt fileg.txt filej.txt filem.txt filep.txt files.txt filev.txt filey.txtfileb.txt filee.txt fileh.txt filek.txt filen.txt fileq.txt filet.txt filew.txt filez.txtfilec.txt filef.txt filei.txt filel.txt fileo.txt filer.txt fileu.txt filex.txt
+范例：比较有无*的功能区别
+[root@centos8 data]#ls -a *[root@centos8 data]#ls -a
+范例：
+[root@centos8 ~]#ls -d /etc/*/[root@centos8 ~]#l.
+范例：
+[root@centos8 data]#touch file*.log[root@centos8 data]#touch file1.log[root@centos8 data]#ls file*.log file1.log &#x27;file*.log&#x27;[root@centos8 data]#ls &#x27;file*.log&#x27;&#x27;file*.log&#x27;[root@centos8 data]#ls &#x27;file*.log&#x27;
+练习
+1、显示/etc目录下所有以l开头，以一个小写字母结尾，且中间出现至少一位数字的文件或目录列表
+[root@192 ~]# ls -d /etc/l*[0-9]*[a-z]/etc/l123df21a[root@192 ~]# ls -d /etc/l*[0-9]*[[:lower:]]/etc/l123se123a
+2、显示/etc目录下以任意一位数字开头，且以非数字结尾的文件或目录列表
+[root@192 ~]# ls /etc/[0-9]*[^0-9] -d/etc/1aa
+3、显示/etc/目录下以非字母开头，后面跟了一个字母及其它任意长度任意字符的文件或目录列表
+[root@192 ~]# ll -d /etc/[^[:alpha:]][[:alpha:]]*drwxr-xr-x 2 root root 4096 Jul  2 14:24 /etc/1aa
+4、显示/etc/目录下所有以rc开头，并后面是0-6之间的数字，其它为任意字符的文件或目录列表
+[root@192 ~]# ls /etc/rc[0-6]* -d/etc/rc0.d  /etc/rc1.d  /etc/rc2.d  /etc/rc3.d  /etc/rc4.d  /etc/rc5.d  /etc/rc6.d
+5、显示/etc目录下，所有.conf结尾，且以m,n,r,p开头的文件或目录列表
+[root@192 ~]# ls /etc/[m,n,r,p]*.conf/etc/man_db.conf  /etc/nfs.conf       /etc/nsswitch.conf     /etc/resolv.conf  /etc/rsyslog.conf/etc/mke2fs.conf  /etc/nfsmount.conf  /etc/request-key.conf  /etc/rsyncd.conf
+6、只显示/root下的隐藏文件和目录列表
+[root@192 ~]# ll -a .*-rw-------. 1 root root 1110 Dec  8  2024 .bash_history-rw-r--r--. 1 root root   18 May 10  2024 .bash_logout-rw-r--r--. 1 root root  176 May 10  2024 .bash_profile-rw-r--r--. 1 root root  176 May 10  2024 .bashrc-rw-r--r--. 1 root root  100 May 10  2024 .cshrc-rw-r--r--. 1 root root  129 May 10  2024 .tcshrc-rw-------. 1 root root 2646 Dec  8  2024 .viminfo.cache:total 8drwx------  2 root root 4096 Dec  8  2024 .dr-xr-x---. 4 root root 4096 Dec  8  2024 ...ssh:total 8drwx------. 2 root root 4096 Dec  8  2024 .dr-xr-x---. 4 root root 4096 Dec  8  2024 ..
+7、只显示/etc下的非隐藏目录列表
+[root@192 ~]# ls -d /etc/[^.]*/etc/1aa                      /etc/ipset                     /etc/protocols/etc/adjtime                  /etc/iscsi                     /etc/quotagrpadmins/etc/aliases                  /etc/isns                      /etc/quotatab/etc/alternatives             /etc/issue                     /etc/rc0.d/etc/anacrontab               /etc/issue.d                   /etc/rc1.d......
+创建空文件和刷新时间
+touch命令可以用来创建空文件或刷新文件的时间
+-a 仅改变 atime和ctime-m 仅改变 mtime和ctime-t [[CC]YY]MMDDhhmm[.ss] 指定atime和mtime的时间戳-c 如果文件不存在，则不予创建
+范例
+[root@centos8 data]#touch f1.txt[root@centos8 data]#lltotal 0-rw-r--r-- 1 root root 0 Mar 23 11:30 f1.txt[root@centos8 data]#ll /etc/issue-rw-r--r--. 1 root root 23 Jan 2 23:21 /etc/issue[root@centos8 data]#touch /etc/issue[root@centos8 data]#ll /etc/issue-rw-r--r--. 1 root root 23 Mar 23 11:31 /etc/issue[root@centos8 data]#stat /etc/issue File: /etc/issue Size: 23       Blocks: 8     IO Block: 4096  regular fileDevice: 802h/2050d   Inode: 134345998  Links: 1Access: (0644/-rw-r--r--) Uid: (  0/  root)  Gid: (  0/  root)Access: 2020-03-23 11:31:20.030291332 +0800Modify: 2020-03-23 11:31:20.030291332 +0800Change: 2020-03-23 11:31:20.030291332 +0800 Birth: -[root@centos8 data]#dateFri Dec 13 16:11:55 CST 2019[root@centos8 data]#touch `date -d &quot;-1 day&quot; +%F_%T`.log[root@centos8 data]#ls2019-12-12_16:11:48.log[root@centos8 data]#touch $(date -d &quot;1 year&quot; +%F_%T).log[root@centos8 data]#ls2019-12-12_16:11:48.log 2020-12-13_16:13:11.log
+复制文件和目录
+利用 cp（copy）命令可以实现文件或目录的复制
+格式
+cp [OPTION]... [-T] SOURCE DESTcp [OPTION]... SOURCE... DIRECTORYcp [OPTION]... -t DIRECTORY SOURCE...
+常用选项
+-i 如果目标已存在，覆盖前提示是否覆盖 -n 不覆盖，注意两者顺序-r, -R 递归复制目录及内部的所有内容-a 归档，相当于-dR --preserv=all，常用于备份功能-d --no-dereference --preserv=links 不复制原文件，只复制链接名--preserv[=ATTR_LIST  mode: 权限  ownership: 属主属组  timestamp:  links  xattr  context  all -p 等同--preserv=mode,ownership,timestamp-v --verbose-f --force-u --update 只复制源比目标更新文件或目标不存在的文件-b 目标存在，覆盖前先备份，默认形式为 filename~ ,只保留最近的一个备份--backup=numbered 目标存在，覆盖前先备份加数字后缀，形式为 filename.~#~ ，可以保留多个版本
+
+
+
+源 \ 目标
+不存在
+存在且为文件
+存在且为目录
+
+
+
+
+一个文件
+新建DEST，并将SRC中的内容填充至DEST中
+将SRC中的内容覆盖至DEST中，注意数据丢失风险！建议用 -i 选项
+在DEST下新建与原文件同名的文件，并将SRC中内容填充至新文件中
+
+
+多个文件
+提示错误
+提示错误
+在DEST下新建与原文件同名的文件，并将原文件内容复制进新文件中
+
+
+目录（须使用 -r 选项）
+创建指定DEST同名目录，复制SRC目录中所有文件至DEST下
+提示错误
+在DEST下新建与原目录同名的目录，并将SRC中内容复制至新目录中
+
+
+
+范例:
+[16:21:08 root@centos8 ~]#cp ~wang/issue /data/issue_wang.bak-rw-r--r--. 1 root root 86 Dec 13 16:21 /data/issue_wang.bak-rw-r--r--. 1 wang wang 86 Dec 13 16:18 /home/wang/issue[16:21:44 root@centos8 ~]#cp -p ~wang/issue /data/issue_wang2.bak[16:22:07 root@centos8 ~]#ll ~wang/issue /data/issue_wang2.bak-rw-r--r--. 1 wang wang 86 Dec 13 16:18 /data/issue_wang2.bak-rw-r--r--. 1 wang wang 86 Dec 13 16:18 /home/wang/issue[16:23:19 root@centos8 ~]#cp /etc/sysconfig/ /data/cp: -r not specified; omitting directory &#x27;/etc/sysconfig/&#x27;[16:23:40 root@centos8 ~]#cp -r /etc/sysconfig/ /data/[16:23:45 root@centos8 ~]#ll /datatotal 12-rw-r--r--. 1 root root  0 Dec 13 16:11 2019-12-12_16:11:48.log-rw-r--r--. 1 root root  0 Dec 13 16:13 2020-12-13_16:13:11.log-rw-r--r--. 1 wang wang  86 Dec 13 16:18 issue_wang2.bak-rw-r--r--. 1 root root  86 Dec 13 16:21 issue_wang.bakdrwxr-xr-x. 7 root root 4096 Dec 13 16:23 sysconfig[16:24:03 root@centos8 ~]#cp -r /etc/sysconfig/ /data/sysconfig_bak[16:24:34 root@centos8 ~]#ll /datatotal 16-rw-r--r--. 1 root root  0 Dec 13 16:11 2019-12-12_16:11:48.log-rw-r--r--. 1 root root  0 Dec 13 16:13 2020-12-13_16:13:11.log-rw-r--r--. 1 wang wang  86 Dec 13 16:18 issue_wang2.bak-rw-r--r--. 1 root root  86 Dec 13 16:21 issue_wang.bakdrwxr-xr-x. 7 root root 4096 Dec 13 16:23 sysconfigdrwxr-xr-x. 7 root root 4096 Dec 13 16:24 sysconfig_bak#用&#123;&#125;进行备份[root@192 ~]# cp /etc/yum.repos.d/openEuler.repo&#123;,.bak&#125;[root@192 ~]# ll /etc/yum.repos.d/total 8-rw-r--r--. 1 root root 2095 Dec  8  2024 openEuler.repo-rw-r--r--  1 root root 2095 Jul  2 14:53 openEuler.repo.bak[root@192 ~]#
+范例：复制时如果覆盖先备份再覆盖
+[16:32:43 root@centos8 ~]#cp -b /etc/motd /data/issuecp: overwrite &#x27;/data/issue&#x27;? y [16:33:09 root@centos8 ~]#ll /datatotal 8-rw-r--r--. 1 root root  1 Dec 13 16:33 issue-rw-r--r--. 1 root root 2610 Dec 13 16:32 issue~[16:33:11 root@centos8 ~]#cp -b /etc/fstab /data/issuecp: overwrite &#x27;/data/issue&#x27;? y[16:33:55 root@centos8 ~]#ll /datatotal 8-rw-r--r--. 1 root root 709 Dec 13 16:33 issue-rw-r--r--. 1 root root  1 Dec 13 16:33 issue~[16:33:56 root@centos8 ~]#cp --backup=numbered  /etc/fstab /data/issuecp: overwrite &#x27;/data/issue&#x27;? y[16:34:32 root@centos8 ~]#cp --backup=numbered  /etc/shadow /data/issuecp: overwrite &#x27;/data/issue&#x27;? y[16:34:41 root@centos8 ~]#cp --backup=numbered  /etc/os-release /data/issuecp: overwrite &#x27;/data/issue&#x27;? y[16:34:48 root@centos8 ~]#ll /datatotal 20-rw-r--r--. 1 root root 420 Dec 13 16:34 issue-rw-r--r--. 1 root root  1 Dec 13 16:33 issue~-rw-r--r--. 1 root root 709 Dec 13 16:33 issue.~1~-rw-r--r--. 1 root root 709 Dec 13 16:34 issue.~2~----------. 1 root root 1349 Dec 13 16:34 issue.~3~
+范例：
+[root@centos8 ~]#cp /dev/zero /data/zero.bak
+练习
+1、每天将/etc/目录下所有文件，备份到/data独立的子目录下，并要求子目录格式为 backupYYYYmm-dd，备份过程可见
+[root@centos8 ~]#cp -av /etc/ /data/backup`date +%F`[root@centos8 ~]#cp -av /etc/ /data/etc-`date +%F_%H-%M-%S
+2、创建/data/rootdir目录，并复制/root下所有文件到该目录内，要求保留原有权限
+[root@centos8 ~]#cp -a /root /data/rootdir
+移动和重命名文件
+mv 命令可以实现文件或目录的移动和改名
+同一分区移动数据,速度很快:数据位置没有变化
+不同分区移动数据,速度相对慢:数据位置发生了变化
+格式：
+mv [OPTION]... [-T] SOURCE DESTmv [OPTION]... SOURCE... DIRECTORYmv [OPTION]... -t DIRECTORY SOURCE...
+常用选项：
+-i 交互式
+-f 强制
+-b 目标存在，覆盖前先备份
+利用 rename 可以批量修改文件名
+格式：
+rename [options] &lt;expression&gt; &lt;replacement&gt; &lt;file&gt;...
+范例：
+#为所有的f开头包含conf的文件加上.bak后缀：rename &#x27;conf&#x27;  &#x27;conf.bak&#x27;  f* #去掉所有的bak后缀：rename &#x27;.bak&#x27; &#x27;&#x27; *.bak
+删除文件
+
+使用 rm 命令可以删除文件和目录
+注意：此命令非常危险，慎重使用，建议使用 mv 代替 rm
+格式：
+rm [OPTION]... FILE...
+常用选项：
+-i 交互式-f 强制删除-r 递归--no-preserve-root 删除/ 
+范例：
+[root@centos8 ~]#rm -rf /rm: it is dangerous to operate recursively on &#x27;/&#x27;rm: use --no-preserve-root to override this failsafe#思考删除/ 文件,如何验证【谨慎操作】[root@centos8 ~]#rm -rf /*[root@centos8 ~]#/2TAB[root@centos8 ~]#echo *
+范例： rm 别名
+[root@centos8 ~]#alias rm=&quot;echo 请使用mv&quot;
+范例：删除特殊文件
+[root@centos8 data]#rm ./-f[root@centos8 data]#rm /data/-f[root@centos8 data]#touch &#x27;~&#x27;[root@centos8 data]#ls&#x27;~&#x27;[root@centos8 data]#rm -f ~rm: cannot remove &#x27;/root&#x27;: Is a directory[root@centos8 data]#rm -- ~rm: cannot remove &#x27;/root&#x27;: Is a directory[root@centos8 data]#rm -f ./~
+rm 虽然删除了文件，但是被删除的文件仍然可能被恢复，在安全要求较高的场景下，可以使用shred安
+全删除文件
+目录操作
+显示目录树 tree
+常见选项：
+-d: 只显示目录
+-L level：指定显示的层级数目
+-P pattern: 只显示由指定wild-card pattern匹配到的路径
+创建目录 mkdir
+常见选项：
+-p: 存在于不报错，且可自动创建所需的各目录
+-v: 显示详细信息
+-m MODE: 创建目录时直接指定权限
+删除空目录 rmdir
+常见选项：
+-p 递归删除父空目录
+-v 显示详细信息
+注意：rmdir只能删除空目录，如果想删除非空目录，可以使用rm -r 命令，递归删除目录树
+范例
+alias rm=&#x27;DIR=/data/backup`date +%F%T`;mkdir $DIR;mv -t $DIR&#x27;
+练习
+(1) 如何创建/testdir/dir1/x, /testdir/dir1/y, /testdir/dir1/x/a, /testdir/dir1/x/b, /testdir/dir1/y/a, /testdir/dir1/y/b
+mkdir -p /testdir/dir1/&#123;x,y&#125;/&#123;a,b&#125;[root@192 ~]# ll /testdir/dir1/&#123;x,y&#125;/testdir/dir1/x:total 8drwxr-xr-x 2 root root 4096 Jul  2 15:08 adrwxr-xr-x 2 root root 4096 Jul  2 15:08 b/testdir/dir1/y:total 8drwxr-xr-x 2 root root 4096 Jul  2 15:08 adrwxr-xr-x 2 root root 4096 Jul  2 15:08 b[root@192 ~]#
+(2) 如何创建/testdir/dir2/x, /testdir/dir2/y, /testdir/dir2/x/a, /testdir/dir2/x/b
+[root@192 ~]# mkdir -p /testdir/dir2/&#123;x,y&#125; /testdir/dir2/x/&#123;a,b&#125;[root@192 ~]# ll /testdir/dir2/&#123;x,y&#125;/testdir/dir2/x:total 8drwxr-xr-x 2 root root 4096 Jul  2 15:09 adrwxr-xr-x 2 root root 4096 Jul  2 15:09 b/testdir/dir2/y:total 0
+(3) 如何创建/testdir/dir3, /testdir/dir4, /testdir/dir5, /testdir/dir5/dir6, /testdir/dir5/dir7
+[root@192 ~]# mkdir -p /testdir/dir&#123;3,4,5&#125; /testdir/dir5/dir&#123;6,7&#125;[root@192 ~]# ll /testdir/dir&#123;3,4,5&#125;/testdir/dir3:total 0/testdir/dir4:total 0/testdir/dir5:total 8drwxr-xr-x 2 root root 4096 Jul  2 15:11 dir6drwxr-xr-x 2 root root 4096 Jul  2 15:11 dir7[root@192 ~]#
+文件元数据和节点表结构
+inode 表结构
+据是存放在inode（index node）表中。inode 表中有很多条记录组成，第一条记录对应的存放了一个
+文件的元数据信息
+每一个inode表记录对应的保存了以下信息：
+inode number 节点号文件类型权限UIDGID链接数（指向这个文件名路径名称个数）该文件的大小和不同的时间戳指向磁盘上文件的数据块指针有关文件的其他数据
+
+目录
+目录是个特殊文件，目录文件的内容保存了此目录中文件的列表及inode number对应关系
+文件引用一个是 inode号
+人是通过文件名来引用一个文件
+一个目录是目录下的文件名和文件inode号之间的映射
+inode表和目录
+
+cp和inode
+cp 命令：
+分配一个空闲的inode号，在inode表中生成新条目
+在目录中创建一个目录项，将名称与inode编号关联
+拷贝数据生成新的文件
+rm和inode
+rm 命令：
+链接数递减，从而释放的inode号可以被重用
+把数据块放在空闲列表中
+删除目录项
+数据实际上不会马上被删除，但当另一个文件使用数据块时将被覆盖
+mv和inode
+如果mv命令的目标和源在相同的文件系统，作为mv 命令
+​    用新的文件名创建对应新的目录项
+​    删除旧目录条目对应的旧的文件名
+​    不影响inode表（除时间戳）或磁盘上的数据位置：没有数据被移动！
+如果目标和源在一个不同的文件系统， mv相当于cp和rm
+范例:
+[root@centos8 ~]#df -i /bootFilesystem   Inodes IUsed IFree IUse% Mounted on/dev/sda1    65536  310 65226  1% /boot[root@centos8 ~]#mkdir /boot/test[root@centos8 ~]#touch /boot/test/file&#123;1..65226&#125;[root@centos8 ~]#touch /boot/test/new.txttouch: cannot touch &#x27;new.txt&#x27;: No space left on device[root@centos8 ~]#df /bootFilesystem   1K-blocks  Used Available Use% Mounted on/dev/sda1     999320 133800  796708 15% /boot[root@centos8 ~]#df -i /bootFilesystem   Inodes IUsed IFree IUse% Mounted on/dev/sda1    65536 65536   0 100% /boot
+范例：删除大文件
+[root@centos8 ~]#cat /dev/null &gt; /var/log/huge.log
+硬（hard）链接
+硬链接本质上就给一个文件起一个新的名称，实质是同一个文件
+硬链接特性
+创建硬链接会在对应的目录中增加额外的记录项以引用文件对应于同一文件系统上一个物理文件每个目录引用相同的inode号创建时链接数递增删除文件时：rm命令递减计数的链接，文件要存在，至少有一个链接数，当链接数为零时，该文件被删除不能跨越驱动器或分区不支持对目录创建硬链接
+格式:
+ln filename [linkname ]
+符号 symbolic （或软 soft）链接
+一个符号链接指向另一个文件,就像 windows 中快捷方式，软链接文件和原文件本质上不是同一个文件
+软链接特点
+一个符号链接的内容是它引用文件的名称可以对目录创建软链接可以跨分区的文件实现指向的是另一个文件的路径；其大小为指向的路径字符串的长度；不增加或减少目标文件inode的引用计数在创建软链接时, 如果源文件使用相对路径，是相对于软链接文件的路径，而非相对于当前工作目录,但是软链接的路径如果是相对路径,则是相对于当前工作目录
+格式：
+ln -s filename [linkname]
+范例: 查看软链接
+[root@ubuntu1804 ~]#ll /bin/shlrwxrwxrwx 1 root root 4 Nov 1 02:16 /bin/sh -&gt; dash*root@ubuntu2004:~# ll /bin/shlrwxrwxrwx 1 root root 4 Apr 23 2020 /bin/sh -&gt; dash*[root@centos8 ~]#ll /bin/shlrwxrwxrwx. 1 root root 4 Jul 22 2020 /bin/sh -&gt; bash[root@centos7 ~]#ll /bin/shlrwxrwxrwx. 1 root root 4 Mar 14 10:46 /bin/sh -&gt; bash
+范例:
+#绝对路径ln -s /data/dir /data/dirlink#相对路径cd /dataln -s ../data/dir /root/dirlink#查看链接文件指向的原文件readlink /data/dirlink[root@centos8 ~]#readlink /proc/$$/exe/usr/bin/bash
+范例: 删除软链接时姿势不对造成的生产事故
+m -rf /data/dirlink  #只删除软链接本身,不会删除源目录内容rm -rf /data/dirlink/  #删除源目录的文件,但不会删除链接文件,此方法非常危险#注意: 删除此软链接务必不要加-r选项
+🌟硬链接和软链接区别总结
+1. 本质：  硬链接：本质是同一个文件	软链接：本质不是同一个文件2. 跨设备	硬链接：不支持	软链接：支持3. inode	硬链接：相同	软链接：不同4. 链接数	硬链接：创建新的硬链接,链接数会增加,删除硬链接,链接数减少	软链接：创建或删除,链接数不会变化5. 文件夹	硬链接：不支持	软链接：支持6. 相对路径	硬链接：原始文件相对路径是相对于当前工作目录	软链接：原始文件的相对路径是相对于链接文件的相对路径7. 删除源文件	硬链接：只是链接数减一,但链接文件的访问不受影响	软链接：链接文件将无法访问8. 文件类型	硬链接：和源文件相同	软链接：链接文件,和源文件无关9. 文件大小	硬链接: 和源文件相同	软链接: 源文件的路径的长度
+生产案例
+案例1：提示空间满 No space left on device，但 df 可以看到空间很多，为什么？
+假设你有一个文件系统，其总inode数为4194304个。当前已经使用了60830个inode，剩余可用的inode数量为4133474个。你尝试创建大量文件，直到inode耗尽。
+[root@192 ~]# dfFilesystem                 1K-blocks    Used Available Use% Mounted on/dev/mapper/openeuler-root  65617452 2570440  59681332   5% /[root@192 ~]# df -iFilesystem                  Inodes IUsed   IFree IUse% Mounted on/dev/mapper/openeuler-root 4194304 60830 4133474    2% /
+创建大量文件耗尽inode
+假设你使用以下命令创建了大量文件：
+for i in &#123;1..4100000&#125;; do touch /test/f$i; done
+中间状态
+在创建过程中，inode逐渐被耗尽。假设你创建了大约3500000个文件后，inode使用情况如下：
+[root@192 ~]# df -iFilesystem                  Inodes  IUsed   IFree IUse% Mounted on/dev/mapper/openeuler-root 4194304 3560830  633474   85% /
+创建更多文件直到inode耗尽
+继续创建文件，直到inode耗尽：
+for i in &#123;3500001..4100000&#125;; do touch /test/f$i; done
+最终状态
+当inode耗尽后，此时，df和df -i的输出可能如下：
+[root@192 ~]# df -iFilesystem                  Inodes  IUsed   IFree IUse% Mounted on/dev/mapper/openeuler-root 4194304 4194303      1  100% /[root@192 ~]# dfFilesystem                 1K-blocks    Used Available Use% Mounted on/dev/mapper/openeuler-root  65617452 2570440  59681332   5% /
+此时，IUsed达到了4194303，IFree只剩下1，IUse%达到了100%。
+/dev/mapper/openeuler-root的磁盘空间使用率仅为5%，还有大量的空间可用。
+尝试创建新文件
+此时，你尝试创建一个新文件：touch /test/newfile
+你会收到以下错误：
+touch: cannot touch &#x27;/test/newfile&#x27;: No space left on device
+
+结论：为什么会出现“No space left on device”？
+尽管磁盘空间充足，但inode已经耗尽。每个文件和目录都需要一个inode来存储其元数据。当inode耗尽时，即使磁盘空间还有剩余，也无法创建新的文件或目录。因此，当你尝试创建新文件时，系统会报出“No space left on device”的错误。
+
+案例2：提示空间快满，使用 rm 删除了很大的无用文件后，df仍然看到空间不足，为什么？如何解决？
+复现过程
+查看df状态 利用率5%
+[root@192 ~]# df -hFilesystem                  Size  Used Avail Use% Mounted on/dev/mapper/openeuler-root   63G  2.5G   57G   5% /
+创建一个大文件
+[root@192 ~]# dd if=/dev/zero of=/bigfile bs=1G count=11+0 records in1+0 records out1073741824 bytes (1.1 GB, 1.0 GiB) copied, 0.622914 s, 1.7 GB/s
+查看磁盘空间使用情况 利用率6%
+[root@192 ~]# df -hFilesystem                  Size  Used Avail Use% Mounted on/dev/mapper/openeuler-root   63G  3.5G   56G   6% /
+这时候复制一个窗口，vim进去
+
+#查看文件是否占用[root@192 ~]# lsof | grep bigfilevim       53885                          root   4u      REG              253,0     4096         13 /.bigfile.swp#删除占用的进程kill -9 53885#当执行删除的时候，其他人正在占用的vim窗口就会强制退出，并且释放空间
+
+使用rm删除了很大的无用文件后，df仍然看到空间不足”的情况。原因是文件被某个进程占用，导致磁盘空间没有立即释放。通过查找并关闭占用文件的进程，可以解决这个问题。
+IO 重定向和管道
+标准输入和输出
+程序：指令+数据
+读入数据：Input
+输出数据：Output
+打开的文件都有一个fd: file descriptor (文件描述符)
+Linux给程序提供三种 I/O 设备
+标准输入（STDIN） －0 默认接受来自终端窗口的输入
+标准输出（STDOUT）－1 默认输出到终端窗口
+标准错误（STDERR） －2 默认输出到终端窗口
+范例：文件描述符
+[root@centos8 ~]#ll /dev/std*lrwxrwxrwx. 1 root root 15 Dec 16 08:56 /dev/stderr -&gt; /proc/self/fd/2lrwxrwxrwx. 1 root root 15 Dec 16 08:56 /dev/stdin -&gt; /proc/self/fd/0lrwxrwxrwx. 1 root root 15 Dec 16 08:56 /dev/stdout -&gt; /proc/self/fd/1[root@centos8 ~]#ll /proc/self/fd/*ls: cannot access &#x27;/proc/self/fd/255&#x27;: No such file or directorylrwx------. 1 root root 64 Dec 16 10:59 /proc/self/fd/0 -&gt; /dev/pts/0lrwx------. 1 root root 64 Dec 16 10:59 /proc/self/fd/1 -&gt; /dev/pts/0lrwx------. 1 root root 64 Dec 16 10:59 /proc/self/fd/2 -&gt; /dev/pts/0lr-x------. 1 root root 64 Dec 16 10:59 /proc/self/fd/3 -&gt; /var/lib/sss/mc/passwdlrwx------. 1 root root 64 Dec 16 10:59 /proc/self/fd/4 -&gt; &#x27;socket:[66542]&#x27;lr-x------. 1 root root 64 Dec 16 10:59 /proc/self/fd/5 -&gt; /var/lib/sss/mc/group[root@centos8 ~]#ll /proc/`pidof tail`/fdtotal 0lrwx------. 1 root root 64 Dec 16 10:56 0 -&gt; /dev/pts/1lrwx------. 1 root root 64 Dec 16 10:56 1 -&gt; /dev/pts/1lrwx------. 1 root root 64 Dec 16 10:56 2 -&gt; /dev/pts/1lr-x------. 1 root root 64 Dec 16 10:56 3 -&gt; /var/log/messageslr-x------. 1 root root 64 Dec 16 10:56 4 -&gt; anon_inode:inotify
+范例: 文件描述符
+[root@centos8 ~]#cat test.txthello[root@centos8 ~]#cat file.pyimport timef = open(&#x27;test.txt&#x27;,&#x27;r&#x27;)time.sleep(1000)[root@centos8 ~]#python3 file.py[root@centos8 ~]#ll /proc/`pidof python3`/fdtotal 0lrwx------ 1 root root 64 Apr 6 18:13 0 -&gt; /dev/pts/0lrwx------ 1 root root 64 Apr 6 18:13 1 -&gt; /dev/pts/0lrwx------ 1 root root 64 Apr 6 18:13 2 -&gt; /dev/pts/0lr-x------ 1 root root 64 Apr 6 18:13 3 -&gt; /root/test.txt
+I/O重定向redirect
+I/O重定向：将默认的输入，输出或错误对应的设备改变，指向新的目标
+标准输出和错误重新定向
+STDOUT和STDERR可以被重定向到指定文件,而非默认的当前终端
+格式
+命令 操作符号 文件名
+支持的操作符号包括
+1&gt; 或 &gt;   把STDOUT重定向到文件2&gt; 把STDERR重定向到文件&amp;&gt; 把标准输出和错误都重定向&gt;&amp; 和上面功能一样，建议使用上面方式
+以上如果文件已存在，文件内容会被覆盖
+追加
+&gt;&gt; 可以在原有内容基础上，追加内容
+把输出和错误重新定向追加到文件
+&gt;&gt; 追加标准输出重定向至文件2&gt;&gt; 追加标准错误重定向至文件
+标准输出和错误输出各自定向至不同位置
+COMMAND &gt; /path/to/file.out 2&gt; /path/to/error.out
+合并标准输出和错误输出为同一个数据流进行重定向
+&amp;&gt;  覆盖重定向&amp;&gt;&gt; 追加重定向COMMAND &gt; /path/to/file.out 2&gt;&amp;1 （顺序很重要）COMMAND &gt;&gt; /path/to/file.out 2&gt;&amp;1
+合并多个程序
+(CMD1;CMD2…) 或者{ CMD1;CMD2;…; }合并多个程序的STDOUT
+范例：
+[root@centos8 ~]#ls 1&gt; /dev/pts/1[root@centos8 ~]#ls /data &gt; /dev/pts/1
+范例：标准错误重定向
+[root@centos8 ~]#rm /data/f1.log 2&gt; /data/all.log
+范例：合并多个命令的结果至一个文件中
+[root@centos8 ~]#( cal 2019 ; cal 2020 ) &gt; all.txt[root@centos8 ~]#&#123; ls;hostname;&#125; &gt; /data/all.log
+范例：清除大文件
+#通用cat /dev/null &gt; /data/file.log#依赖于shell类型,不通用&gt; /data/file.log
+范例：分别重定向
+[root@centos8 ~]#ls /data/ /xxx &gt; stdout.log 2&gt; stderr.log
+范例：将标准输出和错误都重定向到同一个文件
+[root@centos8 ~]#ls /data /xxx &gt; /data/all.log 2&gt;&amp;1[root@centos8 ~]#ls /data /xxx 2&gt; /data/all.log 1&gt;&amp;2[root@centos8 ~]#ls /data /xxx &amp;&gt; /data/all.log [root@centos8 ~]#ls /data /xxx &gt;&amp; /data/all.log [root@centos8 ~]#ls /data /xxx 2&gt;&amp;1 &gt; /data/all.log
+
+前四条命令：
+
+都是先处理标准输出或标准错误的重定向，然后再处理另一个流的重定向。
+例如，ls /data /xxx &gt; /data/all.log 2&gt;&amp;1先将标准输出重定向到文件，再将标准错误重定向到标准输出。
+
+
+第五条命令：
+
+ls /data /xxx 2&gt;&amp;1 &gt; /data/all.log先将标准错误重定向到标准输出，然后再将标准输出重定向到文件。
+这种顺序在某些情况下可能会导致不同的行为，尤其是在更复杂的命令中。但在这个特定的例子中，最终结果是相同的。
+
+
+
+范例
+[root@centos8 ~]#man bash &gt; bash.txt[root@centos8 ~]#wc -l bash.txt3821 bash.txt
+范例
+[root@192 ~]# passwd wangpasswd: Unknown user name &#x27;wang&#x27;.[root@192 ~]# passwd wang &amp;&gt; /dev/null[root@192 ~]#
+范例: 实现标准输出和错误的互换
+[root@centos8 ~]#ls f1.txt f2.txtls: cannot access &#x27;f1.txt&#x27;: No such file or directoryls: cannot access &#x27;f2.txt&#x27;: No such file or directory[root@centos8 ~]#( cat /etc/centos-release /etc/xxx 3&gt;&amp;1 1&gt;&amp;2 2&gt;&amp;3 ) &gt; f1.txt 2&gt; f2.txt[root@centos8 ~]#cat f1.txt cat: /etc/xxx: No such file or directory[root@centos8 ~]#cat f2.txt CentOS Linux release 8.2.2004 (Core)
+标准输入重定向
+从文件中导入STDIN，代替当前终端的输入设备，使用 &lt; 来重定向标准输入
+某些命令能够接受从文件中导入的STDIN
+tr 命令
+tr 转换和删除字符
+tr [OPTION]... SET1 [SET2]
+-d --delete：删除所有属于第一字符集的字符-s --squeeze-repeats：把连续重复的字符以单独一个字符表示,即去重-t --truncate-set1：将第一个字符集对应字符转化为第二字符集对应的字符-c –C --complement：取字符集的补集 \NNN      character with octal value NNN (1 to 3 octal digits) \\       backslash \a       audible BEL \b       backspace \f       form feed \n       new line \r       return \t       horizontal tab \v       vertical tab[:alnum:]：字母和数字[:alpha:]：字母[:digit:]：数字[:lower:]：小写字母[:upper:]：大写字母[:space:]：空白字符[:print:]：可打印字符[:punct:]：标点符号[:graph:]：图形字符[:cntrl:]：控制（非打印）字符[:xdigit:]：十六进制字符
+范例：
+#该命令会把/etc/issue中的小写字符都转换成大写字符[root@192 ~]# cat /etc/issueAuthorized users only. All activities may be monitored and reported.[root@192 ~]# tr a-z A-Z&lt; /etc/issueAUTHORIZED USERS ONLY. ALL ACTIVITIES MAY BE MONITORED AND REPORTED.[root@192 ~]##删除fstab文件中的所有abc中任意字符[root@192 ~]# echo &quot;acvsfasdfSDFD21343243&quot; &gt; 1.txt[root@192 ~]# cat 1.txtacvsfasdfSDFD21343243[root@192 ~]# tr -d abc &lt; 1.txtvsfsdfSDFD21343243[root@192 ~]#
+范例：将所有的连续空格替换成一个空格或别的符号
+[root@192 ~]# df -hFilesystem                  Size  Used Avail Use% Mounted on/dev/mapper/openeuler-root   63G  2.5G   57G   5% /devtmpfs                    4.0M     0  4.0M   0% /devtmpfs                       1.7G     0  1.7G   0% /dev/shmtmpfs                       4.0M     0  4.0M   0% /sys/fs/cgrouptmpfs                       675M  9.1M  666M   2% /runtmpfs                       1.7G     0  1.7G   0% /tmp/dev/sda2                   974M  213M  694M  24% /boot/dev/mapper/openeuler-home   31G   24K   29G   1% /home[root@192 ~]# df -h &gt; df.log[root@192 ~]# tr -s &#x27; &#x27; &lt; df.logFilesystem Size Used Avail Use% Mounted on/dev/mapper/openeuler-root 63G 2.5G 57G 5% /devtmpfs 4.0M 0 4.0M 0% /devtmpfs 1.7G 0 1.7G 0% /dev/shmtmpfs 4.0M 0 4.0M 0% /sys/fs/cgrouptmpfs 675M 9.1M 666M 2% /runtmpfs 1.7G 0 1.7G 0% /tmp/dev/sda2 974M 213M 694M 24% /boot/dev/mapper/openeuler-home 31G 24K 29G 1% /home[root@192 ~]# tr -s &#x27; &#x27; : &lt; df.logFilesystem:Size:Used:Avail:Use%:Mounted:on/dev/mapper/openeuler-root:63G:2.5G:57G:5%:/devtmpfs:4.0M:0:4.0M:0%:/devtmpfs:1.7G:0:1.7G:0%:/dev/shmtmpfs:4.0M:0:4.0M:0%:/sys/fs/cgrouptmpfs:675M:9.1M:666M:2%:/runtmpfs:1.7G:0:1.7G:0%:/tmp/dev/sda2:974M:213M:694M:24%:/boot/dev/mapper/openeuler-home:31G:24K:29G:1%:/home
+标准输入重定向
+实现标准输入重定向的符号
+COMMAND 0&lt; FILECOMMAND &lt; FILE
+比如
+cat &gt; filemagewangxiaochun
+按ctrl+d离开，可以使用文件来代替键盘的输入
+cat &lt; file1 &gt; file2 cat &lt; file1 &gt;&gt; file1
+范例：
+[root@centos8 ~]#echo 2^3 &gt; bc.log[root@centos8 ~]#cat bc.log2^3[root@centos8 ~]#bc &lt; bc.log8[root@centos8 ~]#cat &lt; mail.txthellohow old are you[root@centos8 ~]#cat mail.txthellohow old are you[root@centos8 ~]#cat &lt; mail.txt &gt; mail2.txt[root@centos8 ~]#cat mail2.txthellohow old are you[root@centos8 ~]#cat mail.txt hellohow old are you[root@centos8 ~]#mail -s test2 wang &lt; mail.txt[root@centos8 ~]#cat &gt; cat.logline1line2line3
+把多行重定向
+使用 “&lt;&lt;终止词” 命令从键盘把多行重导向给STDIN，直到终止词位置之前的所有文本都发送给
+STDIN，有时被称为就地文本（here documents）
+其中终止词可以是任何一个或多个符号，比如：!，@，$，EOF（End Of File），magedu等，其中EOF
+比较常用
+cat &gt; 1.txt &lt;&lt;&quot;EOF&quot;21312312321341324324EOF
+高级重定向写法
+cmd &lt;&lt;&lt; &quot;string&quot;
+含义是 here-string ，表示传给给cmd的stdin的内容从这里开始是一个字符串。
+范例：
+[root@rocky8 ~]#tr &#x27;a-z&#x27; &#x27;A-Z&#x27; &lt;&lt;&lt;&quot;I am wang&quot;I AM WANG
+cmd1 &lt; &lt;(cmd2)
+名称为 Process substitution ,是由两个部分组成
+&lt;(cmd2) 表示把cmd2的输出写入一个临时文件, 注意：&lt;和（之间无空格
+cmd1 &lt; 这是一个标准的stdin重定向
+把两个合起来，就是把cmd2的输出stdout传递给cmd1作为输入stdin, 中间通过临时文件做传递
+[root@rocky8 ~]#tr &#x27;a-z&#x27; &#x27;A-Z&#x27; &lt; &lt;(echo I am wang)I AM WANG[root@192 ~]# ll &lt;(echo whoami)lr-x------ 1 root root 64 Jul  2 16:53 /dev/fd/63 -&gt; &#x27;pipe:[99822]&#x27;
+管道
+管道
+管道（使用符号“|”表示）用来连接多个命令
+格式
+命令1 | 命令2 | 命令3 | …
+功能说明：
+将命令1的STDOUT发送给命令2的STDIN，命令2的STDOUT发送到命令3的STDIN
+所有命令会在当前shell进程的子shell进程中执行
+组合多种工具的功能
+注意：STDERR默认不能通过管道转发，可利用2&gt;&amp;1 或 |&amp; 实现，格式如下
+命令1 2&gt;&amp;1 | 命令2 命令1 |&amp; 命令2
+范例
+[root@192 ~]# df -h &gt; df.log[root@192 ~]# tr -s &#x27; &#x27; &lt; df.logFilesystem Size Used Avail Use% Mounted on/dev/mapper/openeuler-root 63G 2.5G 57G 5% /devtmpfs 4.0M 0 4.0M 0% /devtmpfs 1.7G 0 1.7G 0% /dev/shmtmpfs 4.0M 0 4.0M 0% /sys/fs/cgrouptmpfs 675M 9.1M 666M 2% /runtmpfs 1.7G 0 1.7G 0% /tmp/dev/sda2 974M 213M 694M 24% /boot/dev/mapper/openeuler-home 31G 24K 29G 1% /home[root@192 ~]# df -h| tr -s &#x27; &#x27;Filesystem Size Used Avail Use% Mounted on/dev/mapper/openeuler-root 63G 2.5G 57G 5% /devtmpfs 4.0M 0 4.0M 0% /devtmpfs 1.7G 0 1.7G 0% /dev/shmtmpfs 4.0M 0 4.0M 0% /sys/fs/cgrouptmpfs 675M 9.1M 666M 2% /runtmpfs 1.7G 0 1.7G 0% /tmp/dev/sda2 974M 213M 694M 24% /boot/dev/mapper/openeuler-home 31G 24K 29G 1% /home
+范例：
+[root@centos8 ~]#ls /data /xxx | tr &#x27;a-z&#x27; &#x27;A-Z&#x27;ls: cannot access &#x27;/xxx&#x27;: No such file or directory/DATA:ALL.LOGF1.TXTPASSWD.LOGSTERR.LOGSTOUT.LOGTEST.LOGTOUCH.LOG[root@centos8 ~]#ls /data /xxx 2&gt;&amp;1 | tr &#x27;a-z&#x27; &#x27;A-Z&#x27;LS: CANNOT ACCESS &#x27;/XXX&#x27;: NO SUCH FILE OR DIRECTORY/DATA:ALL.LOGF1.TXTPASSWD.LOGSTERR.LOGSTOUT.LOGTEST.LOGTOUCH.LOG[root@centos8 ~]#ls /data /xxx |&amp; tr &#x27;a-z&#x27; &#x27;A-Z&#x27;LS: CANNOT ACCESS &#x27;/XXX&#x27;: NO SUCH FILE OR DIRECTORY/DATA:ALL.LOGF1.TXTPASSWD.LOGSTERR.LOGSTOUT.LOGTEST.LOGTOUCH.LOG
+范例：
+[root@192 ~]# useradd wang[root@192 ~]# passwd --stdin wangChanging password for user wang.123456  #这里输入密码（手动）passwd: all authentication tokens updated successfully.#设置密码文件[root@192 ~]# cat &gt; pass.txt&lt;&lt; &quot;EOF&quot;123456EOF#用文件的密码传入进行修改密码[root@192 ~]# passwd --stdin wang &lt; pass.txtChanging password for user wang.passwd: all authentication tokens updated successfully.[root@192 ~]# cat pass.txt | passwd --stdin wangChanging password for user wang.passwd: all authentication tokens updated successfully.#明文密码[root@192 ~]# echo 123456 | passwd --stdin wangChanging password for user wang.passwd: all authentication tokens updated successfully.[root@192 ~]# echo 123456 | passwd --stdin wang &amp;&gt;/dev/null[root@192 ~]#
+范例：
+#转换为大写字母ls | tr ‘a-z’ ‘A-Z’#less实现分页地查看输入ls -l /etc | less#mail通过电子邮件发送输入echo &quot;test email&quot; | mail -s &quot;test&quot; wang@example.com#算术运算echo &quot;2^3&quot; |bc
+范例:
+[root@rocky8 ~]#ls --help | grep size#有此命令的帮助信是是标准错误[root@rocky8 ~]#mysqldump --help |&amp; grep master-data
+tee 命令
+利用 tee 命令可以重定向到多个目标，经常配合管道符一起使用
+格式
+命令1 | tee [-a ] 文件名 | 命令2
+以上可以把命令1的STDOUT保存在文件中，做为命令2的输入
+选项：
+-a 追加
+功能：
+保存不同阶段的输出
+复杂管道的故障排除
+同时查看和记录输出
+范例
+[root@centos8 ~]#echo &#123;1..100&#125;|tr &#x27; &#x27; +|bc5050[root@centos8 ~]#echo &#123;1..100..2&#125; | tr &#x27; &#x27; + | bc 2500[root@centos8 ~]#seq -s + 1 100 |bc5050[root@centos8 ~]#seq -s+ 1 2 100 | bc2500
+范例：
+cat &lt;&lt;EOF | tee 2.txtwelcome to mageduhappy new yearEOF
+[root@192 ~]# cat &lt;&lt;EOF | tee 2.txtwelcome to mageduhappy new yearEOFwelcome to mageduhappy new year[root@192 ~]#
+范例
+[root@192 ~]# tee 3.txt &gt;/dev/null &lt;&lt;&quot;EOF&quot;welcome to mageduhappy new yearwelcome to mageduhappy new yearwelcome to mageduhappy new yearEOF[root@192 ~]# cat 3.txtwelcome to mageduhappy new yearwelcome to mageduhappy new yearwelcome to mageduhappy new year[root@192 ~]#
+
+ 特别声明
+千屹博客旗下的所有文章，是通过本人课堂学习和课外自学所精心整理的知识巨著难免会有出错的地方如果细心的你发现了小失误，可以在下方评论区告诉我，或者私信我！非常感谢大家的热烈支持！
+
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>运维笔记</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>用户、组和权限</title>
+    <url>/posts/bca3897f/</url>
+    <content><![CDATA[
+用户、组和权限
+内容概述
+Linux的安全模型
+用户和组相关文件
+用户和组管理命令
+理解并设置文件权限
+默认权限
+特殊权限
+文件访问控制列表
+Linux安全模型
+资源分派：
+
+Authentication：认证，验证用户身份
+Authorization：授权，不同的用户设置不同权限
+Accouting|Audition：审计
+
+当用户登录成功时，系统会自动分配令牌 token，包括：用户标识和组成员等信息
+用户
+Linux中每个用户是通过 User Id （UID）来唯一标识的
+
+
+管理员：root, 0
+
+
+普通用户：1-60000 自动分配
+
+
+系统用户：1-499 （CentOS 6以前）, 1-999 （CentOS 7以后）
+对守护进程获取资源进行权限分配
+
+
+登录用户：500+ （CentOS6以前）, 1000+（CentOS7以后）
+给用户进行交互式登录使用
+
+
+
+
+用户组
+Linux中可以将一个或多个用户加入用户组中，用户组是通过Group ID（GID） 来唯一标识的。
+
+
+管理员组：root, 0
+
+
+普通组：
+
+
+系统组：1-499（CentOS 6以前）, 1-999（CentOS7以后）, 对守护进程获取资源进行权限分配
+
+
+普通组：500+（CentOS 6以前）, 1000+（CentOS7以后）, 给用户使用
+
+
+
+
+用户和组的关系
+用户的主要组(primary group)：用户必须属于一个且只有一个主组，默认创建用户时会自动创建和用户名同名的组，做为用户的主要组，由于此组中只有一个用户，又称为私有组
+用户的附加组(supplementary group)： 一个用户可以属于零个或多个辅助组，附属组
+范例:
+[root@centos8 ~]#id postfixuid=89(postfix) gid=89(postfix) groups=89(postfix),12(mail)
+安全上下文
+Linux安全上下文Context：运行中的程序，即进程 (process)，以进程发起者的身份运行，进程所能够访问资源的权限取决于进程的运行者的身份
+比如：分别以root 和wang 的身份运行 /bin/cat /etc/shadow ，得到的结果是不同的，资源能否能被访问，是由运行者的身份决定，非程序本身
+范例:
+[wang@centos8 ~]$cat /etc/shadowcat: /etc/shadow: Permission denied[root@centos8 ~]#cat /etc/shadowroot:$6$zsrWEC56PrKifAEz$hylCuGySe.H6l6O2MRvbtqy/VZgnZbau.y57dE85.YHq03MTJVV4UvQVIDcYA1IJzbgpWE0vTU.BtPHLbNBNn0:18246:0:99999:7:::bin:*:18027:0:99999:7:::daemon:*:18027:0:99999:7:::adm:*:18027:0:99999:7:::lp:*:18027:0:99999:7:::
+用户和组的配置文件
+用户和组的主要配置文件
+/etc/passwd：用户及其属性信息(名称、UID、主组ID等）/etc/shadow：用户密码及其相关属性/etc/group：组及其属性信息/etc/gshadow：组密码及其相关属性
+passwd文件格式
+login name：登录用名（wang）passwd：密码 (x)UID：用户身份编号 (1000)GID：登录默认所在组编号 (1000)GECOS：用户全名或注释home directory：用户主目录 (/home/wang)shell：用户默认使用shell (/bin/bash)
+shadow文件格式
+登录用名用户密码:一般用sha512加密从1970年1月1日起到密码最近一次被更改的时间密码再过几天可以被变更（0表示随时可被变更）密码再过几天必须被变更（99999表示永不过期）密码过期前几天系统提醒用户（默认为一周）密码过期几天后帐号会被锁定从1970年1月1日算起，多少天后帐号失效
+更改密码加密算法：
+authconfig  --passalgo=sha256 --update
+密码的安全策略
+
+足够长
+使用数字、大写字母、小写字母及特殊字符中至少3种
+使用随机密码
+定期更换,不要使用最近曾经使用过的密码
+
+范例：生成随机密码
+[:alnum:] ：任意数字或字母
+[root@centos8 ~]#tr -dc &#x27;[:alnum:]&#x27; &lt; /dev/urandom | head -c 12sFg6C8g5FAfe[root@centos8 ~]#openssl rand -base64 9hvMkPmAyIrXMQInt#生成随机密码[root@centos8 ~]#yum -y install expect[root@centos8 ~]#mkpasswd -l 8 -c 2 -C 2 -d 2 -s 2 #生成随机密码恀网站：https://suijimimashengcheng.51240.com/
+group文件格式
+群组名称：就是群组名称群组密码：通常不需要设定，密码是被记录在 /etc/gshadow GID：就是群组的 ID 以当前组为附加组的用户列表(分隔符为逗号)
+gshdow文件格式
+群组名称：就是群的名称群组密码：组管理员列表：组管理员的列表，更改组密码和成员以当前组为附加组的用户列表：多个用户间用逗号分隔
+文件操作
+vipw和vigrpwck和grpck
+用户和组管理命令
+#用户管理命令  useradd  usermod  userdel#组帐号维护命令  groupadd  groupmod  groupdel
+用户创建
+useradd 命令可以创建新的Linux用户
+格式：useradd [options] LOGIN
+选项：
+-u UID -o 配合-u 选项，不检查UID的唯一性-g GID 指明用户所属基本组，可为组名，也可以GID-c &quot;COMMENT“ 用户的注释信息-d HOME_DIR 以指定的路径(不存在)为家目录-s SHELL 指明用户的默认shell程序，可用列表在/etc/shells文件中-G GROUP1[,GROUP2,...] 为用户指明附加组，组须事先存在-N 不创建私用组做主组，使用users组做主组-r 创建系统用户 CentOS 6之前: ID&lt;500，CentOS7 以后: ID&lt;1000-m 创建家目录，用于系统用户-M 不创建家目录，用于非系统用户-p 指定加密的密码
+范例:
+useradd -r -u 48 -g apache -s /sbin/nologin -d /var/www -c &quot;Apache&quot; apache
+useradd 命令默认值设定由/etc/default/useradd定义
+[root@centos8 ~]#cat /etc/default/useradd# useradd defaults fileGROUP=100HOME=/homeINACTIVE=-1  #对应/etc/shadow文件第7列，即用户密码过期后的帐号锁定的宽限期,-1表示不锁定EXPIRE=    #对应/etc/shadow文件第8列，即用户帐号的有效期SHELL=/bin/bashSKEL=/etc/skel #用于生成新建用户家目录的模版文件CREATE_MAIL_SPOOL=yes
+显示或更改默认设置
+useradd -D useradd –D -s SHELLuseradd –D –b BASE_DIRuseradd –D –g GROUP
+新建用户的相关文件
+
+/etc/default/useradd
+/etc/skel/*
+/etc/login.defs
+
+批量创建用户
+newusers passwd 格式文件 
+批量修改用户口令
+echo username:passwd | chpasswd
+范例: CentOS8 生成sha512加密密
+[root@192 ~]# openssl passwd -6 123456$6$BDS.Zas72d3VXaZL$thfW6W6SrwfhlCoEh/o45G.icd.a.HY3q/mwxdIU.wOp2ELiRN5YPMwORAWNCYFdLU7b9rkxUEUFqV7aqJjOL/
+范例: CentOS7 利用Python程序在 生成sha512加密密码
+[root@centos7 ~]#python -c &#x27;import crypt,getpass;pw=&quot;magedu&quot;;print(crypt.crypt(pw))&#x27;$6$pt0SFMf6YqKea3mh$.7Hkslg17uI.Wu7BcMJStVVtkzrwktXrOC8DxcMFC4JO1igrqR7VAi87H5PHOuLTUEjl7eJqKUhMT1e9ixojn1
+用户属性修改
+usermod 命令可以修改用户属性
+#格式usermod [OPTION] login
+常见选项：
+-u UID: 新UID-g GID: 新主组-G GROUP1[,GROUP2,...[,GROUPN]]]：新附加组，原来的附加组将会被覆盖；若保留原有，则要同时使用-a选项-s SHELL：新的默认SHELL-c &#x27;COMMENT&#x27;：新的注释信息-d HOME: 新家目录不会自动创建；若要创建新家目录并移动原家数据，同时使用-m选项-l login_name: 新的名字-L: lock指定用户,在/etc/shadow 密码栏的增加 ! -U: unlock指定用户,将 /etc/shadow 密码栏的 ! 拿掉-e YYYY-MM-DD: 指明用户账号过期日期-f INACTIVE: 设定非活动期限，即宽限期
+删除用户
+userdel 可删除Linux 用户
+#格式userdel [OPTION]... Login
+常见选项：
+-f, --force  强制-r, --remove 删除用户家目录和邮箱
+范例: 强制删除用户和数据
+[root@centos8 ~]#useradd test[root@centos8 ~]#id testuid=1001(test) gid=1001(test) groups=1001(test)#在另一终端用test登录[root@centos8 ~]#su - test[test@centos8 ~]$#删除正在登录的用户失败[root@centos8 ~]#userdel -r testuserdel: user test is currently used by process 29909[root@centos8 ~]#id testuid=1001(test) gid=1001(test) groups=1001(test)#强制删除用户[root@centos8 ~]#userdel -rf testuserdel: user test is currently used by process 29909[root@centos8 ~]#id testid: ‘test’: no such user
+查看用户相关的ID信息
+id 命令可以查看用户的UID，GID等信息
+格式：
+id [OPTION]... [USER]
+常见选项：
+-u: 显示UID-g: 显示GID-G: 显示用户所属的组的ID-n: 显示名称，需配合ugG使用
+切换用户或以其他用户身份执行命令
+su: 即 switch user，命令可以切换用户身份，并且以指定用户的身份执行命令
+格式：
+su [options...] [-] [user [args...]]
+常见选项：
+-l --login  su -l UserName  相当于 su - UserName-c, --command &lt;command&gt;     pass a single command to the shell with -c
+切换用户的方式：
+
+su UserName：非登录式切换，即不会读取目标用户的配置文件，不改变当前工作目录，即不完全切换
+su - UserName：登录式切换，会读取目标用户的配置文件，切换至自已的家目录，即完全切换
+
+说明：root su至其他用户无须密码；非root用户切换时需要密码
+注意：su 切换新用户后，使用 exit 退回至旧的用户身份，而不要再用 su 切换至旧用户，否则会生成很多的bash子进程，环境可能会混乱。
+换个身份执行命令：
+su [-] UserName -c &#x27;COMMAND&#x27;
+范例：
+[root@centos8 ~]#getent passwd magemage:x:1001:1001::/home/mage:/bin/bash[root@centos8 ~]#usermod -s /bin/false mage[root@centos8 ~]#getent passwd magemage:x:1001:1001::/home/mage:/bin/false[root@centos8 ~]#su - mageLast login: Fri Mar 27 09:18:57 CST 2020 on pts/0[root@centos8 ~]#whoamiroot
+范例：
+[root@centos8 ~]#su -s /sbin/nologin wangThis account is currently not available.[root@centos8 ~]#whoamiroot[root@centos8 ~]#su -s /bin/false wang[root@centos8 ~]#whoamiroot
+范例：
+[wang@centos8 ~]$su - root -c &quot;getent shadow&quot;
+范例：
+[root@192 ~]# su - wang -c &#x27;touch wang.txt&#x27;[root@192 ~]# ll /home/wang/total 0-rw-r--r-- 1 wang wang 0 Jul  2 17:49 wang.txt
+范例：
+[root@centos8 ~]#su binThis account is currently not available.[root@centos8 ~]#su -s /bin/bash binbash-4.4$ whoamibinbash-4.4$[root@centos8 ~]#getent passwd tsstss:x:59:59:Account used by the trousers package to sandbox the tcsd daemon:/dev/null:/sbin/nologin[root@centos8 ~]#su - -s /bin/bash tssLast login: Fri Mar 27 09:46:43 CST 2020 on pts/0su: warning: cannot change directory to /dev/null: Not a directory-bash: /dev/null/.bash_profile: Not a directory[tss@centos8 root]$pwd/root[tss@centos8 root]$whoamitss
+范例：
+[root@centos8 ~]#getent passwd binbin:x:1:1:bin:/bin:/sbin/nologin[root@centos8 ~]#su -c &#x27;whoami&#x27; binnologin: invalid option -- &#x27;c&#x27;Try &#x27;nologin --help&#x27; for more information.[root@centos8 ~]#su -s /bin/bash -c &#x27;whoami&#x27; binbin
+设置密码
+
+passwd 可以修改用户密码
+格式：
+passwd [OPTIONS] UserName
+常用选项：
+-d：删除指定用户密码-l：锁定指定用户-u：解锁指定用户-e：强制用户下次登录修改密码-f：强制操作-n mindays：指定最短使用期限-x maxdays：最大使用期限-w warndays：提前多少天开始警告-i inactivedays：非活动期限--stdin：从标准输入接收用户密码,Ubuntu无此选项
+范例：非交互式修改用户密码
+#此方式更通用，适用于各种Linux版本，如:ubuntu[root@192 ~]# echo -e &#x27;123456\n123456&#x27; | passwd wangChanging password for user wang.New password: BAD PASSWORD: The password is shorter than 8 charactersRetype new password: passwd: all authentication tokens updated successfully.#适用于红帽系列的Linux版本[root@centos8 ~]#echo &#x27;123456&#x27; | passwd --stdin mageChanging password for user mage.passwd: all authentication tokens updated successfully.#生成随机密码[root@centos8 ~]#yum -y install expect[root@centos8 ~]#mkpasswd -l 8 -c 2 -C 2 -d 2 -s 2 |tee passwd.txt | passwd --stdin wangChanging password for user wang.passwd: all authentication tokens updated successfully.[root@centos8 ~]#cat passwd.txt 1Q!9Lnl]
+范例: Ubuntu 非交互式修改用户密码
+[root@ubuntu1804 ~]#echo wang:centos |chpasswd[root@ubuntu1804 ~]#passwd wang &lt;&lt;EOFcentoscentosEOFEnter new UNIX password: Retype new UNIX password: passwd: password updated successfully[root@ubuntu1804 ~]#echo -e &#x27;magedu\nmagedu&#x27; | passwd wangEnter new UNIX password: Retype new UNIX password: passwd: password updated successfully
+范例：设置用户下次必须更改密码
+[root@centos8 ~]#useradd wang[root@centos8 ~]#echo 123456 | passwd --stdin wangChanging password for user wang.passwd: all authentication tokens updated successfully.[root@centos8 ~]#getent shadow wangwang:$6$4f78ko7hJ4fcMvIH$lpbOkFfziDBLT.8XBCi8c/N7wysDAejN5H9Fgxkt99HRDLTEosO43CKYi2XSSVHxAK568Olj3C5bwfNExlves/:18348:0:99999:7:::[root@centos8 ~]#passwd -e wangExpiring password for user wang.passwd: Success[root@centos8 ~]#getent shadow wangwang:$6$4f78ko7hJ4fcMvIH$lpbOkFfziDBLT.8XBCi8c/N7wysDAejN5H9Fgxkt99HRDLTEosO43CKYi2XSSVHxAK568Olj3C5bwfNExlves/:0:0:99999:7:::[root@centos8 ~]#su - mageLast login: Fri Mar 27 09:55:27 CST 2020 on pts/0[mage@centos8 ~]$su - wangPassword:You are required to change your password immediately (administrator enforced)Current password:New password:BAD PASSWORD: The password is shorter than 8 charactersNew password:BAD PASSWORD: The password fails the dictionary check - it is too simplistic/systematicsu: Have exhausted maximum number of retries for service[mage@centos8 ~]$su - wangPassword:You are required to change your password immediately (administrator enforced)Current password:New password:Retype new password:Last login: Fri Mar 27 10:01:20 CST 2020 on pts/0Last failed login: Fri Mar 27 10:02:37 CST 2020 on pts/0There was 1 failed login attempt since the last successful login.[wang@centos8 ~]$exitlogout[mage@centos8 ~]$exitlogout[root@centos8 ~]#getent shadow wangwang:$6$TX0iLjF52ByHh1zH$g.WI4LNfauuwgnxpRhd7ePqFKHZ85YU3r6Lh2S0PWRXWGjGlDVtomLWqpdiWrT.vwqD/Wzok.kzQhUHc8UCs91:18348:0:99999:7:::
+修改用户密码策略
+chage 可以修改用户密码策略
+格式：
+chage [OPTION]... LOGIN
+常见选项：
+-d LAST_DAY        #更改密码的时间-m --mindays MIN_DAYS-M --maxdays MAX_DAYS-W --warndays WARN_DAYS-I --inactive INACTIVE #密码过期后的宽限期-E --expiredate EXPIRE_DATE #用户的有效期-l 显示密码策略
+范例：
+[root@centos8 ~]#chage wangChanging the aging information for wangEnter the new value, or press ENTER for the default Minimum Password Age [0]: 3 Maximum Password Age [99999]: 42 Last Password Change (YYYY-MM-DD) [2021-03-14]: 2021-03-29     Password Expiration Warning [7]: 10 Password Inactive [-1]: 20 Account Expiration Date (YYYY-MM-DD) [-1]: 2022-03-29[root@centos8 ~]#getent shadow wangwang:$6$UpJNaaFGwCqFBSN9$MA4OMcJRJWbNPeMmQPvVjUcI4RYbGywipqYc9hlg87YUXvmpbi.Zcni8ktdzw/DuECug4IBoEC/yXYv7dknu/0:18715:3:42:10:20:19080:[root@centos8 ~]#chage -m 3 -M 42 -W 14 -I 7 -E 2020-10-10 wang[root@centos8 ~]#chage -l wangLast password change : Dec 18, 2019Password expires : Jan 29, 2020Password inactive : Feb 05, 2020Account expires : Oct 10, 2020Minimum number of days between password change : 3Maximum number of days between password change : 42Number of days of warning before password expires : 14[root@centos8 ~]#getent shadow wangwang:$6$82L7A37XJgzKTegH$lFzqrMHmFwW740U32bvWHUuakPDKOiULE/CxcyDzSe1qi1X2ALulDw1WYrhd2wE00.lWO0im5//7biyV.juk5.:18248:3:42:14:7:18545:#下一次登录强制重设密码[root@centos8 ~]#chage -d 0 wang[root@centos8 ~]#getent shadow wangwang:$6$82L7A37XJgzKTegH$lFzqrMHmFwW740U32bvWHUuakPDKOiULE/CxcyDzSe1qi1X2ALulDw1WYrhd2wE00.lWO0im5//7biyV.juk5.:0:3:42:14:7:18545:[root@centos8 ~]#chage -l wangLast password change : password must be changedPassword expires : password must be changedPassword inactive : password must be changedAccount expires : Oct 10, 2020Minimum number of days between password change : 3Maximum number of days between password change : 42Number of days of warning before password expires : 14[root@centos8 ~]#getent shadow wangwang:$6$82L7A37XJgzKTegH$lFzqrMHmFwW740U32bvWHUuakPDKOiULE/CxcyDzSe1qi1X2ALulDw1WYrhd2wE00.lWO0im5//7biyV.juk5.:0:3:42:14:7:18545:
+创建组
+groupadd实现创建组
+#格式groupadd [OPTION]... group_name
+常见选项：
+-g GID 指明GID号；[GID_MIN, GID_MAX]-r 创建系统组，CentOS 6之前: ID&lt;500，CentOS 7以后: ID&lt;1000
+范例:
+groupadd -g 48 -r apache
+修改组
+groupmod 组属性修改
+格式：
+groupmod [OPTION]... group
+常见选项：
+-n group_name: 新名字-g GID: 新的GID
+组删除
+groupdel 可以删除组
+格式
+groupdel [options] GROUP
+常见选项：
+-f, --force 强制删除，即使是用户的主组也强制删除组,但会导致无主组的用户不可用无法登录
+更改组成员和密码
+gpasswd命令，可以更改组密码，也可以修改附加组的成员关系
+格式
+gpasswd [OPTION] GROUP
+常见选项：
+-a user 将user添加至指定组中-d user 从指定附加组中移除用户user-A user1,user2,... 设置有管理权限的用户列表
+范例:
+#增加组成员[root@centos8 ~]#groupadd admins[root@centos8 ~]#id wanguid=1000(wang) gid=1000(wang) groups=1000(wang)[root@centos8 ~]#gpasswd -a wang adminsAdding user wang to group admins[root@centos8 ~]#id wanguid=1000(wang) gid=1000(wang) groups=1000(wang),1002(admins)[root@centos8 ~]#groups wangwang : wang admins[root@centos8 ~]#getent group adminsadmins:x:1002:wang#删除组成员[root@centos8 ~]#gpasswd -d wang adminsRemoving user wang from group admins[root@centos8 ~]#groups wangwang : wang[root@centos8 ~]#id wanguid=1000(wang) gid=1000(wang) groups=1000(wang)[root@centos8 ~]#getent group adminsadmins:x:1002:
+更改和查看组成员
+groupmems 可以管理附加组的成员关系
+格式
+groupmems [options] [action]
+常见选项：
+-g, --group groupname  #更改为指定组 (只有root)-a, --add username   #指定用户加入组-d, --delete username #从组中删除用户-p, --purge        #从组中清除所有成员-l, --list         #显示组成员列表
+groups 可查看用户组关系
+格式
+#查看用户所属组列表groups [OPTION].[USERNAME]...
+范例:
+[root@centos8 ~]#groupmems -l -g admins[root@centos8 ~]#groupmems -a mage -g admins[root@centos8 ~]#id mageuid=1001(mage) gid=1001(mage) groups=1001(mage),1002(admins)[root@centos8 ~]#groupmems -l -g adminsmage [root@centos8 ~]#groupmems -a wang -g admins[root@centos8 ~]#groupmems -l -g adminsmage wang [root@centos8 ~]#groupmems -d wang -g admins[root@centos8 ~]#groups wangwang : wang[root@centos8 ~]#groupmems -l -g adminsmage [root@centos8 ~]#groupmems -p -g admins[root@centos8 ~]#groupmems -l -g admins
+练习
+
+创建用户gentoo，附加组为bin和root，默认shell为/bin/csh，注释信息为&quot;Gentoo Distribution&quot;
+
+[root@192 ~]# useradd -G bin,root -s /bin/csh -c &quot;Gentoo Distribution&quot; gentoouseradd: Warning: missing or non-executable shell &#x27;/bin/csh&#x27;[root@192 ~]# id gentoouid=1004(gentoo) gid=1004(gentoo) groups=1004(gentoo),0(root),1(bin)[root@192 ~]# cat /etc/passwd | grep gentoogentoo:x:1004:1004:Gentoo Distribution:/home/gentoo:/bin/csh
+
+创建下面的用户、组和组成员关系
+名字为webs 的组
+用户nginx，使用webs 作为附加组
+用户varnish，使用webs 作为附加组
+用户mysql，不可交互登录系统，且不是webs 的成员，nginx，varnish，mysql密码都是123456
+
+groupadd websuseradd -G webs nginxuseradd -G webs varnishuseradd -s /sbin/nologin mysqlecho 123456 | passwd --stdin nginxecho 123456 | passwd --stdin varnishecho 123456 | passwd --stdin mysql
+文件权限管理
+程序访问文件时的权限，取决于此程序的发起者
+
+进程的发起者，同文件的属主：则应用文件属主权限
+进程的发起者，属于文件属组；则应用文件属组权限
+应用文件“其它”权限
+
+
+文件所有者和属组属性操作
+设置文件的所有者chown
+chown 命令可以修改文件的属主，也可以修改文件属组
+格式
+chown [OPTION]... [OWNER][:[GROUP]] FILE...chown [OPTION]... --reference=RFILE FILE...
+用法说明：
+OWNER  #只修改所有者OWNER:GROUP #同时修改所有者和属组:GROUP  #只修改属组，冒号也可用 . 替换--reference=RFILE #参考指定的的属性，来修改  -R #递归，此选项慎用，非常危险！
+范例:
+[root@centos8 data]#cp /etc/fstab f1.txt[root@centos8 data]#pwd/data[root@centos8 data]#lltotal 4-rw-r--r-- 1 root root 709 Dec 18 10:13 f1.txt[root@centos8 data]#chown wang f1.txt[root@centos8 data]#lltotal 4-rw-r--r-- 1 wang root 709 Dec 18 10:13 f1.txt[root@centos8 data]#chown :admins f1.txt[root@centos8 data]#ll f1.txt-rw-r--r-- 1 wang admins 709 Dec 18 10:13 f1.txt[root@centos8 data]#chown root.bin f1.txt[root@centos8 data]#ll total 4-rw-r--r-- 1 root bin 709 Dec 18 10:13 f1.txt[root@centos8 data]#chown wang:admins f1.txt[root@centos8 data]#lltotal 4-rw-r--r-- 1 wang admins 709 Dec 18 10:13 f1.txt[root@centos8 data]#cp /etc/issue f2.txt[root@centos8 data]#lltotal 8-rw-r--r-- 1 wang admins 709 Dec 18 10:13 f1.txt-rw-r--r-- 1 root root  23 Dec 18 10:15 f2.txt[root@centos8 data]#chown --reference=f1.txt f2.txt[root@centos8 data]#lltotal 8-rw-r--r-- 1 wang admins 709 Dec 18 10:13 f1.txt-rw-r--r-- 1 wang admins 23 Dec 18 10:15 f2.txt
+范例：
+[root@centos8 ~]#chown -R wang.admins /data/
+设置文件的属组信息chgrp
+chgrp 命令可以只修改文件的属组
+格式
+chgrp [OPTION]... GROUP FILE...chgrp [OPTION]... --reference=RFILE FILE...
+-R 递归
+范例:
+[root@centos8 data]#ll f1.txt-rw-r--r-- 1 wang root 709 Dec 18 10:13 f1.txt[root@centos8 data]#chgrp admins f1.txt [root@centos8 data]#ll f1.txt-rw-r--r-- 1 wang admins 709 Dec 18 10:13 f1.txt
+文件权限
+文件权限说明
+文件的权限主要针对三类对象进行定义
+owner 属主, ugroup 属组, gother 其他, o
+注意：
+用户的最终权限，是从左向右进行顺序匹配，即，所有者，所属组，其他人，一旦匹配权限立即生效，不再向右查看其权限r和w权限对root 用户无效只要所有者,所属组或other三者之一有x权限,root就可以执行
+每个文件针对每类访问者都定义了三种常用权限
+每个文件针对每类访问者都定义了三种权限
+r Readable 4w Writable 2x eXcutable 1
+对文件的权限：
+r 可使用文件查看类工具，比如：cat，可以获取其内容w 可修改其内容,文件的是否被删除和文件的权限无关x 可以把此文件提请内核启动为一个进程，即可以执行（运行）此文件（此文件的内容必须是可执行）文件权限常见组合--- 0r  4r-x 5 rw 6rwx 7
+对目录的权限：
+r 可以使用ls查看此目录中文件名列表,但无法看到文件的属性meta信息,包括inode号,不能查看文件的内容w 可在此目录中创建文件，也可删除此目录中的文件，而和此被删除的文件的权限无关x 可以cd进入此目录，可以使用ls -l file或stat file 查看此目录中指定文件的元数据，当预先知道文件名称时,也可以查看文件的内容,属于目录的可访问的最小权限X 分配给目录或有部分x权限的文件的x权限，对无任意x权限的文件则不会分配x权限目录权限常见组合-  不能访问目录r-x 只读目录rwx 可读也可写目录
+面试题：
+Linux中的目录和文件的权限区别？分别说明读，写和执行权限的区别
+文件权限：
+
+读（r）：允许查看文件内容。
+写（w）：允许修改文件内容。
+执行（x）：允许运行文件（如果文件是可执行程序或脚本）。
+
+目录权限：
+
+读（r）：允许查看目录中的文件列表。
+写（w）：允许在目录中创建、删除文件或子目录。
+执行（x）：允许进入目录（即访问目录内容）。
+
+总结来说，文件的执行权限用于运行文件，而目录的执行权限用于访问目录
+
+八进制数字
+--- 000 0--x 001 1-w- 010 2-wx 011 3r-- 100 4r-x 101 5rw- 110 6rwx 111 7
+例如：
+rw-r----- 640 rwxr-xr-x 755
+修改文件权限chmod
+格式
+chmod [OPTION]... MODE[,MODE]... FILE...chmod [OPTION]... OCTAL-MODE FILE...#参考RFILE文件的权限，将FILE的修改为同RFILEchmod [OPTION]... --reference=RFILE FILE...
+说明： 模式法格式
+MODE：who opt permissionwho:u,g,o,a opt:+,-,=permission:r,w,x修改指定一类用户的所有权限u= g= o= ug= a= u=,g=修改指定一类用户某个或某个权限u+ u- g+ g- o+ o- a+ a- + --R: 递归修改权限
+范例: 设置 X 权限
+[root@centos8 data]#ll dirtotal 8-rw-r--r-- 1 root root 709 Dec 18 11:09 f1.txt-rwxr--r-- 1 root root 709 Dec 18 11:09 f2.txtdrw-r--r-- 2 root root  6 Dec 18 11:15 subdir[root@centos8 data]#ll -d dirdrwxr-xr-- 3 root root 48 Dec 18 11:15 dir[root@centos8 data]#chmod -R a+X dir[root@centos8 data]#ll -d dirdrwxr-xr-x 3 root root 48 Dec 18 11:15 dir[root@centos8 data]#ll dirtotal 8-rw-r--r-- 1 root root 709 Dec 18 11:09 f1.txt-rwxr-xr-x 1 root root 709 Dec 18 11:09 f2.txtdrwxr-xr-x 2 root root  6 Dec 18 11:15 subdir
+范例：
+chmod u+wx,g-r,o=rx filechmod -R g+rwX /testdirchmod 600 file
+范例：面试题
+执行 cp /etc/issue /data/dir/ 所需要的最小权限？/bin/cp 需要x权限/etc/ 需要x权限/etc/issue 需要r权限/data 需要x权限/data/dir 需要w,x权限
+新建文件和目录的默认权限
+umask 的值可以用来保留在创建文件权限
+实现方式：
+
+新建文件的默认权限: 666-umask，如果所得结果某位存在执行（奇数）权限，则将其权限+1,偶数不变
+新建目录的默认权限: 777-umask
+
+非特权用户umask默认是 002
+root的umask 默认是 022
+查看umask
+umask#模式方式显示umask –S #输出可被调用umask –p
+修改umask
+umask #
+范例
+umask 002umask u=rw,g=r,o=
+持久保存umask
+
+全局设置： /etc/bashrc
+用户设置：~/.bashrc
+
+范例：
+[root@centos8 ~]#umask0022[root@centos8 ~]#( umask 666; touch /data/f1.txt )[root@centos8 ~]#umask0022[root@centos8 ~]#ll /data/f1.txt---------- 1 root root 0 Mar 27 14:55 /data/f1.txt
+练习
+1.当用户docker对/testdir 目录无执行权限时，意味着无法做哪些操作？
+1.进入该目录（cd /testdir 失败）  2.访问目录中的文件或子目录  3.执行该目录下的可执行文件  4.正常挂载或访问作为 volume 的该目录 
+2.当用户mongodb对/testdir 目录无读权限时，意味着无法做哪些操作？
+1.使用 ls /testdir 查看目录内容。  2.列出该目录下的文件名和子目录。  3.通过路径访问目录内的文件（即使知道文件名，也可能受限）。  4.在程序中读取或扫描该目录中的文件列表。   
+3.当用户redis 对/testdir 目录无写权限时，该目录下的只读文件file1是否可修改和删除？
+1.不能删除 file1 （因为删除文件需要对目录 有写权限）2.不能修改 file1的内容 （因为修改需要先打开文件，通常也需要对文件本身有写权限）但如果 file1 本身是只读的（如只有读权限），即使用户对目录有写权限，也不能修改它的内容。 但是可以删除他
+4.当用户zabbix对/testdir 目录有写和执行权限时，该目录下的只读文件file1是否可修改和删除？
+1.可以删除 file1 （因为删除文件只需要对目录 有写权限）2.不能修改 file1 的内容 （因为文件本身是只读的，需要对文件 有写权限才能修改）
+5.复制/etc/fstab文件到/var/tmp下，设置文件所有者为tomcat读写权限，所属组为apps组有读写权限，其他人无权限
+cp /etc/fstab /var/tmp/chown tomcat:apps /var/tmp/fstabchmod 660 /var/tmp/fstab
+
+所有者（tomcat）：读写权限 rw- → 6
+所属组（apps）：读写权限 rw- → 6
+其他人：无权限 --- → 0
+
+6.误删除了用户git的家目录，请重建并恢复该用户家目录及相应的权限属性
+useradd git        # 如果用户不存在mkdir -p /home/gitcp -r /etc/skel/. /home/git/chown -R git:git /home/gitchmod 700 /home/git
+Linux文件系统上的特殊权限
+前面介绍了三种常见的权限：r, w, x 还有三种特殊权限：SUID, SGID, Sticky
+特殊权限
+
+SUID 作用于二进制可执行文件上,用户将继承此程序所有者的权限
+SGID 作用于二进制可执行文件上,用户将继承此程序所有组的权限作于于目录上, 此目录中新建的文件的所属组将自动从此目录继承
+STICKY 作用于目录上,此目录中的文件只能由所有者自已来删除
+
+特殊权限SUID
+前提：进程有属主和属组；文件有属主和属组
+
+任何一个可执行程序文件能不能启动为进程,取决发起者对程序文件是否拥有执行权限
+启动为进程之后，其进程的属主为发起者,进程的属组为发起者所属的组
+进程访问文件时的权限，取决于进程的发起者
+
+二进制的可执行文件上SUID权限功能：
+
+任何一个可执行程序文件能不能启动为进程：取决发起者对程序文件是否拥有执行权限
+启动为进程之后，其进程的属主为原程序文件的属主
+SUID只对二进制可执行程序有效
+SUID设置在目录上无意义
+
+SUID权限设定：
+chmod u+s FILE...chmod 4xxx FILEchmod u-s FILE...
+范例：
+[root@centos8 ~]#ls -l /usr/bin/passwd-rwsr-xr-x. 1 root root 34928 May 11 2019 /usr/bin/passwd
+特殊权限SGID
+二进制的可执行文件上SGID权限功能：
+
+任何一个可执行程序文件能不能启动为进程：取决发起者对程序文件是否拥有执行权限
+启动为进程之后，其进程的属组为原程序文件的属组
+
+SGID权限设定：
+chmod g+s FILE... chmod 2xxx FILEchmod g-s FILE...
+目录上的SGID权限功能：
+默认情况下，用户创建文件时，其属组为此用户所属的主组，一旦某目录被设定了SGID，则对此目录有
+写权限的用户在此目录中创建的文件所属的组为此目录的属组，通常用于创建一个协作目录
+SGID权限设定：
+chmod g+s DIR...chmod 2xxx DIRchmod g-s DIR...
+特殊权限 Sticky 位
+具有写权限的目录通常用户可以删除该目录中的任何文件，无论该文件的权限或拥有权
+在目录设置Sticky 位，只有文件的所有者或root可以删除该文件
+sticky 设置在文件上无意义
+Sticky权限设定：
+chmod o+t DIR...chmod 1xxx DIRchmod o-t DIR...
+范例：
+[root@centos8 ~]#ll -d /tmpdrwxrwxrwt. 15 root root 4096 Dec 12 20:16 /tmp
+特殊权限数字法
+SUID SGID STICKY
+000 0001 1010 2011 3100 4101 5110 6111 7
+范例：
+chmod 4777 /tmp/a.txt
+权限位映射
+SUID: user,占据属主的执行权限位
+s：属主拥有x权限
+S：属主没有x权限
+SGID: group,占据属组的执行权限位
+s： group拥有x权限
+S：group没有x权限
+Sticky: other,占据other的执行权限位
+t：other拥有x权限
+T：other没有x权限
+设定文件特殊属性
+设置文件的特殊属性，可以访问 root 用户误操作删除或修改文件
+不能删除，改名，更改
+chattr +i file
+只能追加内容，不能删除，改名
+chattr +a file
+显示特定属性
+lsattr
+范例
+[root@centos8 data]#chattr +i dir[root@centos8 data]#lsattr dir------------------ dir/fstab------------------ dir/f1.txt[root@centos8 data]#lsattr *------------------ dir/fstab------------------ dir/f1.txt------------------ f11.txt------------------ f22.txt[root@centos8 data]#lltotal 8drwxr-xr-x 2 root root 33 Dec 18 14:32 dir-rw-r--r-- 1 root root 719 Dec 18 14:30 f11.txt-rw-r--r-- 1 root root  6 Dec 18 14:30 f22.txt[root@centos8 data]#rm -rf dirrm: cannot remove &#x27;dir/fstab&#x27;: Operation not permittedrm: cannot remove &#x27;dir/f1.txt&#x27;: Operation not permitted[root@centos8 data]#lsattr ------------------ ./f11.txt------------------ ./f22.txt----i------------- ./dir[root@centos8 data]#chattr -i dir[root@centos8 data]#lsattr ------------------ ./f11.txt------------------ ./f22.txt------------------ ./dir
+访问控制列表 ACL
+ACL权限功能
+ACL：Access Control List，实现灵活的权限管理
+除了文件的所有者，所属组和其它人，可以对更多的用户设置权限
+CentOS7 默认创建的xfs和ext4文件系统具有ACL功能
+CentOS7 之前版本，默认手工创建的ext4文件系统无ACL功能,需手动增加
+tune2fs –o acl /dev/sdb1mount –o acl /dev/sdb1 /mnt/test
+ACL生效顺序：
+所有者，自定义用户，所属组|自定义组，其他人
+ACL相关命令
+setfacl 可设置ACL权限getfacl 可查看设置的ACL权限
+范例:
+[root@centos8 data]#ll f1.txt-rw-r--r-- 1 root root 709 Dec 18 14:37 f1.txt[root@centos8 data]#setfacl -m u:wang:- f1.txt[root@centos8 data]#ll total 4-rw-r--r--+ 1 root root 709 Dec 18 14:37 f1.txt[root@centos8 data]#getfacl f1.txt# file: f1.txt# owner: root# group: rootuser::rwuser:wang:---group::r--mask::r--other::r--[root@centos8 data]#su wang[wang@centos8 data]$cat f1.txtcat: f1.txt: Permission denied[wang@centos8 data]$echo xx &gt;&gt; f1.txtbash: f1.txt: Permission denied
+范例:
+[root@centos8 data]#getfacl f1.txt# file: f1.txt# owner: root# group: rootuser::rwgroup::r--other::r--[root@centos8 data]#setfacl -m u:wang:0 f1.txt[root@centos8 data]#setfacl -m g:admins:w f1.txt[root@centos8 data]#ll f1.txt-rw-rw-r--+ 1 root root 718 Dec 18 14:44 f1.txt[root@centos8 data]#getfacl f1.txt# file: f1.txt# owner: root# group: rootuser::rwuser:wang:---group::r--group:admins:-wmask::rwother::r--[root@centos8 data]#id wanguid=1000(wang) gid=1000(wang) groups=1000(wang)[root@centos8 data]#id mageuid=1001(mage) gid=1001(mage) groups=1001(mage)[root@centos8 data]#su mage[mage@centos8 data]$cat f1.txt## /etc/fstab# Created by anaconda on Wed Dec 11 11:11:16 2019## Accessible filesystems, by reference, are maintained under &#x27;/dev/disk/&#x27;.# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info.## After editing this file, run &#x27;systemctl daemon-reload&#x27; to update systemd# units generated from this file.#UUID=1b950ef9-7142-46bd-975c-c4ac1e0d47e8 /            xfs   defaults    0 0UUID=667a4c81-8b4b-4a39-a111-b11cb6d09309 /boot          ext4  defaults    1 2UUID=38d14714-c018-41d5-922c-49e415decbca /data          xfs   defaults    0 0UUID=a0efb2bb-8227-4317-a79d-0a70d515046c swap          swap  defaults    0 0magedata[mage@centos8 data]$echo magedata2 &gt;&gt; f1.txtbash: f1.txt: Permission denied[mage@centos8 data]$exitexit[root@centos8 data]#gpasswd -a mage adminsAdding user mage to group admins[root@centos8 data]#id mageuid=1001(mage) gid=1001(mage) groups=1001(mage),1002(admins)[root@centos8 data]#su mage[mage@centos8 data]$echo magedata3 &gt;&gt; f1.txt [mage@centos8 data]$cat f1.txtcat: f1.txt: Permission denied[mage@centos8 data]$exitexit[root@centos8 data]#su wang[wang@centos8 data]$cat f1.txtcat: f1.txt: Permission denied[wang@centos8 data]$echo wangdata &gt;&gt; f1.txtbash: f1.txt: Permission denied[wang@centos8 data]$exitexit[root@centos8 data]#groupmems -a wang -g admins[root@centos8 data]#id wanguid=1000(wang) gid=1000(wang) groups=1000(wang),1002(admins)[root@centos8 data]#su wang[wang@centos8 data]$getfacl f1.txt # file: f1.txt# owner: root# group: rootuser::rwuser:wang:---group::r--group:admins:-wmask::rwother::r--[wang@centos8 data]$cat f1.txtcat: f1.txt: Permission denied[wang@centos8 data]$echo wangdata2 &gt;&gt; f1.txtbash: f1.txt: Permission denied
+范例：
+mount -o acl /directorygetfacl file |directorysetfacl -m u:wang:rwx file|directorysetfacl -m g:admins:rw file| directorysetfacl -x u:wang file |directory#清除所有ACL权限setfacl -b file1 #复制file1的acl权限给file2getfacl file1 | setfacl --set-file=- file2
+mask 权限
+
+mask只影响除所有者和other的之外的人和组的最大权限
+mask需要与用户的权限进行逻辑与运算后，才能变成有限的权限(Effective Permission)
+用户或组的设置必须存在于mask权限设定范围内才会生效
+
+范例：
+setfacl -m mask::rx file
+范例:
+[root@centos8 data]#ll f1.txt-rw-rw-r--+ 1 root root 728 Dec 18 14:51 f1.txt[root@centos8 data]#chmod g=r f1.txt[root@centos8 data]#ll f1.txt-rw-r--r--+ 1 root root 728 Dec 18 14:51 f1.txt[root@centos8 data]#getfacl f1.txt# file: f1.txt# owner: root# group: rootuser::rwuser:wang:---group::r--group:admins:-w- #effective:---mask::r--other::r--[root@centos8 data]#setfacl -m mask::rw f1.txt[root@centos8 data]#getfacl f1.txt# file: f1.txt# owner: root# group: rootuser::rwuser:wang:---group::r--group:admins:-wmask::rwother::r--[root@centos8 data]#setfacl -m u:wang:rwx f1.txt[root@centos8 data]#getfacl f1.txt# file: f1.txt# owner: root# group: rootuser::rwuser:wang:rwxgroup::r--group:admins:-wmask::rwxother::r--[root@centos8 data]#setfacl -m mask::rw f1.txt[root@centos8 data]#getfacl f1.txt# file: f1.txt# owner: root# group: rootuser::rwuser:wang:rwx #effective:rwgroup::r--group:admins:-wmask::rwother::r--
+–set选项会把原有的ACL项都删除，用新的替代，需要注意的是一定要包含UGO的设置，不能象-m一样只是添加ACL就可以
+范例：
+setfacl --set u::rw,u:wang:rw,g::r,o::- file1
+
+ 特别声明
+千屹博客旗下的所有文章，是通过本人课堂学习和课外自学所精心整理的知识巨著难免会有出错的地方如果细心的你发现了小失误，可以在下方评论区告诉我，或者私信我！非常感谢大家的热烈支持！
+
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>运维笔记</tag>
+      </tags>
+  </entry>
+</search>
