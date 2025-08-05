@@ -1,0 +1,680 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>用户、组和权限 | 严千屹博客</title><meta name="author" content="严千屹"><meta name="copyright" content="严千屹"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="MHA+PXC">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用户、组和权限">
+<meta property="og:url" content="https://yw.qianyios.top/posts/ab706382/index.html">
+<meta property="og:site_name" content="严千屹博客">
+<meta property="og:description" content="MHA+PXC">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i0.hdslb.com/bfs/new_dyn/6e5783bede6cb070a7198aa4d4dc56fb697559838.png">
+<meta property="article:published_time" content="2025-08-03T16:28:40.000Z">
+<meta property="article:modified_time" content="2025-08-05T09:07:28.006Z">
+<meta property="article:author" content="严千屹">
+<meta property="article:tag" content="Mysql">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i0.hdslb.com/bfs/new_dyn/6e5783bede6cb070a7198aa4d4dc56fb697559838.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "用户、组和权限",
+  "url": "https://yw.qianyios.top/posts/ab706382/",
+  "image": "https://i0.hdslb.com/bfs/new_dyn/6e5783bede6cb070a7198aa4d4dc56fb697559838.png",
+  "datePublished": "2025-08-03T16:28:40.000Z",
+  "dateModified": "2025-08-05T09:07:28.006Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "严千屹",
+      "url": "https://blog.qianyios.top"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yw.qianyios.top/posts/ab706382/index.html"><link rel="preconnect"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="/pluginsSrc/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="/pluginsSrc/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":true,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":200,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":150,"languages":{"author":"作者: 严千屹","link":"链接: ","source":"来源: 严千屹博客","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: '/pluginsSrc/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '用户、组和权限',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="//at.alicdn.com/t/c/font_1232762_lfyb6ri0kug.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/><link rel="stylesheet" type="text/css" href="/css/my.css"><meta name="referrer" content="no-referrer"/><meta name="baidu-site-verification" content="codeva-zscxkbTWf7" /><meta name="google-site-verification" content="1zGJFCeeGb41mMQ8kA5KXdLo4_mLIecUtqm5MCX61ZM" /><script defer src="https://cloud.umami.is/script.js" data-website-id="83039d8f-bd3d-4637-bcfa-22c3a2fc0ac1"></script><link rel="stylesheet" href="https://portb.kbai.cc/hexo&amp;kbai/mousezhizhen.css"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="web_bg" style="background-image: url(/img/bg.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/fluid.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">1</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" target="_blank" rel="noopener" href="https://blog.qianyios.top/posts/22484/"><i class="fa-fw iconfont icon-liuyan"></i><span> 公共留言板</span></a></li></ul></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">严千屹博客</span></a><a class="nav-page-title" href="/"><span class="site-name">用户、组和权限</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><span class="site-page group hide"><i class="fa-fw fas fa-list"></i><span> 列表</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" target="_blank" rel="noopener" href="https://blog.qianyios.top/posts/22484/"><i class="fa-fw iconfont icon-liuyan"></i><span> 公共留言板</span></a></li></ul></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">用户、组和权限</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-08-03T16:28:40.000Z" title="发表于 2025-08-04 00:28:40">2025-08-04</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-08-05T09:07:28.006Z" title="更新于 2025-08-05 17:07:28">2025-08-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%BF%90%E7%BB%B4/">运维</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">8.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>35分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><div id="post-outdate-notice" data="{&quot;limitDay&quot;:365,&quot;messagePrev&quot;:&quot;已经过了&quot;,&quot;messageNext&quot;:&quot;天自上次更新，文章内容可能已过时。&quot;,&quot;postUpdate&quot;:&quot;2025-08-05 17:07:28&quot;}" hidden></div><meta name="referrer" content="no-referrer"/>
+<h1 id="用户、组和权限">用户、组和权限</h1>
+<p><strong>内容概述</strong></p>
+<p><strong>Linux的安全模型</strong></p>
+<p><strong>用户和组相关文件</strong></p>
+<p><strong>用户和组管理命令</strong></p>
+<p><strong>理解并设置文件权限</strong></p>
+<p><strong>默认权限</strong></p>
+<p><strong>特殊权限</strong></p>
+<p><strong>文件访问控制列表</strong></p>
+<h2 id="Linux安全模型">Linux安全模型</h2>
+<p>资源分派：</p>
+<ul>
+<li>Authentication：认证，验证用户身份</li>
+<li>Authorization：授权，不同的用户设置不同权限</li>
+<li>Accouting|Audition：审计</li>
+</ul>
+<p>当用户登录成功时，系统会自动分配令牌 token，包括：用户标识和组成员等信息</p>
+<h3 id="用户"><strong>用户</strong></h3>
+<p>Linux中每个用户是通过 User Id （UID）来唯一标识的</p>
+<ul>
+<li>
+<p><code>管理员</code>：root, 0</p>
+</li>
+<li>
+<p><code>普通用户</code>：1-60000 自动分配</p>
+<ul>
+<li>
+<p>系统用户：1-499 （CentOS 6以前）, 1-999 （CentOS 7以后）</p>
+<p>对守护进程获取资源进行权限分配</p>
+</li>
+<li>
+<p>登录用户：500+ （CentOS6以前）, 1000+（CentOS7以后）</p>
+<p>给用户进行交互式登录使用</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="用户组"><strong>用户组</strong></h3>
+<p>Linux中可以将一个或多个用户加入用户组中，用户组是通过Group ID（GID） 来唯一标识的。</p>
+<ul>
+<li>
+<p>管理员组：root, 0</p>
+</li>
+<li>
+<p>普通组：</p>
+<ul>
+<li>
+<p>系统组：1-499（CentOS 6以前）, 1-999（CentOS7以后）, 对守护进程获取资源进行权限分配</p>
+</li>
+<li>
+<p>普通组：500+（CentOS 6以前）, 1000+（CentOS7以后）, 给用户使用</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="用户和组的关系"><strong>用户和组的关系</strong></h3>
+<p>用户的主要组(primary group)：用户必须属于一个且只有一个主组，默认创建用户时会自动创建和用户名同名的组，做为用户的主要组，由于此组中只有一个用户，又称为私有组</p>
+<p>用户的附加组(supplementary group)： 一个用户可以属于零个或多个辅助组，附属组</p>
+<p>范例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 ~]#<span class="built_in">id</span> postfix</span><br><span class="line">uid=89(postfix) gid=89(postfix) <span class="built_in">groups</span>=89(postfix),12(mail)</span><br></pre></td></tr></table></figure>
+<h3 id="安全上下文"><strong>安全上下文</strong></h3>
+<p>Linux安全上下文Context：运行中的程序，即进程 (process)，以进程发起者的身份运行，进程所能够访问资源的权限取决于进程的运行者的身份</p>
+<p>比如：分别以root 和wang 的身份运行 /bin/cat /etc/shadow ，得到的结果是不同的，资源能否能被访问，是由运行者的身份决定，非程序本身</p>
+<p>范例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[wang@centos8 ~]<span class="variable">$cat</span> /etc/shadow</span><br><span class="line"><span class="built_in">cat</span>: /etc/shadow: Permission denied</span><br><span class="line">[root@centos8 ~]#<span class="built_in">cat</span> /etc/shadow</span><br><span class="line">root:$6$zsrWEC56PrKifAEz<span class="variable">$hylCuGySe</span>.H6l6O2MRvbtqy/VZgnZbau.y57dE85.YHq03MTJVV4UvQ</span><br><span class="line">VIDcYA1IJzbgpWE0vTU.BtPHLbNBNn0:18246:0:99999:7:::</span><br><span class="line">bin:*:18027:0:99999:7:::</span><br><span class="line">daemon:*:18027:0:99999:7:::</span><br><span class="line">adm:*:18027:0:99999:7:::</span><br><span class="line">lp:*:18027:0:99999:7:::</span><br></pre></td></tr></table></figure>
+<h2 id="用户和组的配置文件"><strong>用户和组的配置文件</strong></h2>
+<h3 id="用户和组的主要配置文件"><strong>用户和组的主要配置文件</strong></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/etc/passwd：用户及其属性信息(名称、UID、主组ID等）</span><br><span class="line">/etc/shadow：用户密码及其相关属性</span><br><span class="line">/etc/group：组及其属性信息</span><br><span class="line">/etc/gshadow：组密码及其相关属性</span><br></pre></td></tr></table></figure>
+<h3 id="passwd文件格式">passwd文件格式</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">login name：登录用名（wang）</span><br><span class="line">passwd：密码 (x)</span><br><span class="line">UID：用户身份编号 (1000)</span><br><span class="line">GID：登录默认所在组编号 (1000)</span><br><span class="line">GECOS：用户全名或注释</span><br><span class="line">home directory：用户主目录 (/home/wang)</span><br><span class="line">shell：用户默认使用shell (/bin/bash)</span><br></pre></td></tr></table></figure>
+<h3 id="shadow文件格式">shadow文件格式</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">登录用名</span><br><span class="line">用户密码:一般用sha512加密</span><br><span class="line">从1970年1月1日起到密码最近一次被更改的时间</span><br><span class="line">密码再过几天可以被变更（0表示随时可被变更）</span><br><span class="line">密码再过几天必须被变更（99999表示永不过期）</span><br><span class="line">密码过期前几天系统提醒用户（默认为一周）</span><br><span class="line">密码过期几天后帐号会被锁定</span><br><span class="line">从1970年1月1日算起，多少天后帐号失效</span><br></pre></td></tr></table></figure>
+<p>更改密码加密算法：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">authconfig  --passalgo=sha256 --update</span><br></pre></td></tr></table></figure>
+<p>密码的安全策略</p>
+<ul>
+<li>足够长</li>
+<li>使用数字、大写字母、小写字母及特殊字符中至少3种</li>
+<li>使用随机密码</li>
+<li>定期更换,不要使用最近曾经使用过的密码</li>
+</ul>
+<p>范例：生成随机密码</p>
+<p>[:alnum:] ：任意数字或字母</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 ~]#<span class="built_in">tr</span> -dc <span class="string">&#x27;[:alnum:]&#x27;</span> &lt; /dev/urandom | <span class="built_in">head</span> -c 12</span><br><span class="line">sFg6C8g5FAfe</span><br><span class="line">[root@centos8 ~]#openssl rand -<span class="built_in">base64</span> 9</span><br><span class="line">hvMkPmAyIrXMQInt</span><br><span class="line"><span class="comment">#生成随机密码</span></span><br><span class="line">[root@centos8 ~]#yum -y install expect</span><br><span class="line">[root@centos8 ~]#mkpasswd -l 8 -c 2 -C 2 -d 2 -s 2 </span><br><span class="line"><span class="comment">#生成随机密码恀网站：</span></span><br><span class="line">https://suijimimashengcheng.51240.com/</span><br></pre></td></tr></table></figure>
+<h3 id="group文件格式">group文件格式</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">群组名称：就是群组名称</span><br><span class="line">群组密码：通常不需要设定，密码是被记录在 /etc/gshadow </span><br><span class="line">GID：就是群组的 ID </span><br><span class="line">以当前组为附加组的用户列表(分隔符为逗号)</span><br></pre></td></tr></table></figure>
+<h3 id="gshdow文件格式">gshdow文件格式</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">群组名称：就是群的名称</span><br><span class="line">群组密码：</span><br><span class="line">组管理员列表：组管理员的列表，更改组密码和成员</span><br><span class="line">以当前组为附加组的用户列表：多个用户间用逗号分隔</span><br></pre></td></tr></table></figure>
+<h3 id="文件操作"><strong>文件操作</strong></h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vipw和vigr</span><br><span class="line">pwck和grpck</span><br></pre></td></tr></table></figure>
+<h2 id="用户和组管理命令"><strong>用户和组管理命令</strong></h2>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#用户管理命令</span></span><br><span class="line">  useradd</span><br><span class="line">  usermod</span><br><span class="line">  userdel</span><br><span class="line"><span class="comment">#组帐号维护命令</span></span><br><span class="line">  groupadd</span><br><span class="line">  groupmod</span><br><span class="line">  groupdel</span><br></pre></td></tr></table></figure>
+<h3 id="用户创建"><strong>用户创建</strong></h3>
+<p>useradd 命令可以创建新的Linux用户</p>
+<p>格式：useradd [options] LOGIN</p>
+<p>选项：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">-u UID </span><br><span class="line">-o 配合-u 选项，不检查UID的唯一性</span><br><span class="line">-g GID 指明用户所属基本组，可为组名，也可以GID</span><br><span class="line">-c <span class="string">&quot;COMMENT“ 用户的注释信息</span></span><br><span class="line"><span class="string">-d HOME_DIR 以指定的路径(不存在)为家目录</span></span><br><span class="line"><span class="string">-s SHELL 指明用户的默认shell程序，可用列表在/etc/shells文件中</span></span><br><span class="line"><span class="string">-G GROUP1[,GROUP2,...] 为用户指明附加组，组须事先存在</span></span><br><span class="line"><span class="string">-N 不创建私用组做主组，使用users组做主组</span></span><br><span class="line"><span class="string">-r 创建系统用户 CentOS 6之前: ID&lt;500，CentOS7 以后: ID&lt;1000</span></span><br><span class="line"><span class="string">-m 创建家目录，用于系统用户</span></span><br><span class="line"><span class="string">-M 不创建家目录，用于非系统用户</span></span><br><span class="line"><span class="string">-p 指定加密的密码</span></span><br></pre></td></tr></table></figure>
+<p>范例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">useradd -r -u 48 -g apache -s /sbin/nologin -d /var/www -c <span class="string">&quot;Apache&quot;</span> apache</span><br></pre></td></tr></table></figure>
+<p>useradd 命令默认值设定由/etc/default/useradd定义</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 ~]#<span class="built_in">cat</span> /etc/default/useradd</span><br><span class="line"><span class="comment"># useradd defaults file</span></span><br><span class="line">GROUP=100</span><br><span class="line">HOME=/home</span><br><span class="line">INACTIVE=-1  <span class="comment">#对应/etc/shadow文件第7列，即用户密码过期后的帐号锁定的宽限期,-1表示不锁定</span></span><br><span class="line">EXPIRE=    <span class="comment">#对应/etc/shadow文件第8列，即用户帐号的有效期</span></span><br><span class="line">SHELL=/bin/bash</span><br><span class="line">SKEL=/etc/skel <span class="comment">#用于生成新建用户家目录的模版文件</span></span><br><span class="line">CREATE_MAIL_SPOOL=<span class="built_in">yes</span></span><br></pre></td></tr></table></figure>
+<p>显示或更改默认设置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">useradd -D </span><br><span class="line">useradd –D -s SHELL</span><br><span class="line">useradd –D –b BASE_DIR</span><br><span class="line">useradd –D –g GROUP</span><br></pre></td></tr></table></figure>
+<p>新建用户的相关文件</p>
+<ul>
+<li>/etc/default/useradd</li>
+<li>/etc/skel/*</li>
+<li>/etc/login.defs</li>
+</ul>
+<p>批量创建用户</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">newusers passwd 格式文件 </span><br></pre></td></tr></table></figure>
+<p>批量修改用户口令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> username:passwd | chpasswd</span><br></pre></td></tr></table></figure>
+<p>范例: CentOS8 生成sha512加密密</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@192 ~]# openssl passwd -6 123456</span><br><span class="line">$6<span class="variable">$BDS</span>.Zas72d3VXaZL<span class="variable">$thfW6W6SrwfhlCoEh</span>/o45G.icd.a.HY3q/mwxdIU.wOp2ELiRN5YPMwORAWNCYFdLU7b9rkxUEUFqV7aqJjOL/</span><br></pre></td></tr></table></figure>
+<p>范例: CentOS7 利用Python程序在 生成sha512加密密码</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@centos7 ~]#python -c <span class="string">&#x27;import </span></span><br><span class="line"><span class="string">crypt,getpass;pw=&quot;magedu&quot;;print(crypt.crypt(pw))&#x27;</span></span><br><span class="line">$6$pt0SFMf6YqKea3mh$.7Hkslg17uI.Wu7BcMJStVVtkzrwktXrOC8DxcMFC4JO1igrqR7VAi87H5PH</span><br><span class="line">OuLTUEjl7eJqKUhMT1e9ixojn1</span><br></pre></td></tr></table></figure>
+<h3 id="用户属性修改"><strong>用户属性修改</strong></h3>
+<p>usermod 命令可以修改用户属性</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#格式</span></span><br><span class="line">usermod [OPTION] login</span><br></pre></td></tr></table></figure>
+<p>常见选项：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">-u UID: 新UID</span><br><span class="line">-g GID: 新主组</span><br><span class="line">-G GROUP1[,GROUP2,...[,GROUPN]]]：新附加组，原来的附加组将会被覆盖；若保留原有，则要同时使</span><br><span class="line">用-a选项</span><br><span class="line">-s SHELL：新的默认SHELL</span><br><span class="line">-c <span class="string">&#x27;COMMENT&#x27;</span>：新的注释信息</span><br><span class="line">-d HOME: 新家目录不会自动创建；若要创建新家目录并移动原家数据，同时使用-m选项</span><br><span class="line">-l login_name: 新的名字</span><br><span class="line">-L: lock指定用户,在/etc/shadow 密码栏的增加 ! </span><br><span class="line">-U: unlock指定用户,将 /etc/shadow 密码栏的 ! 拿掉</span><br><span class="line">-e YYYY-MM-DD: 指明用户账号过期日期</span><br><span class="line">-f INACTIVE: 设定非活动期限，即宽限期</span><br></pre></td></tr></table></figure>
+<h3 id="删除用户"><strong>删除用户</strong></h3>
+<p>userdel 可删除Linux 用户</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#格式</span></span><br><span class="line">userdel [OPTION]... Login</span><br></pre></td></tr></table></figure>
+<p>常见选项：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-f, --force  强制</span><br><span class="line">-r, --remove 删除用户家目录和邮箱</span><br></pre></td></tr></table></figure>
+<p>范例: 强制删除用户和数据</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 ~]#useradd <span class="built_in">test</span></span><br><span class="line">[root@centos8 ~]#<span class="built_in">id</span> <span class="built_in">test</span></span><br><span class="line">uid=1001(<span class="built_in">test</span>) gid=1001(<span class="built_in">test</span>) <span class="built_in">groups</span>=1001(<span class="built_in">test</span>)</span><br><span class="line"><span class="comment">#在另一终端用test登录</span></span><br><span class="line">[root@centos8 ~]#su - <span class="built_in">test</span></span><br><span class="line">[<span class="built_in">test</span>@centos8 ~]$</span><br><span class="line"><span class="comment">#删除正在登录的用户失败</span></span><br><span class="line">[root@centos8 ~]#userdel -r <span class="built_in">test</span></span><br><span class="line">userdel: user <span class="built_in">test</span> is currently used by process 29909</span><br><span class="line">[root@centos8 ~]#<span class="built_in">id</span> <span class="built_in">test</span></span><br><span class="line">uid=1001(<span class="built_in">test</span>) gid=1001(<span class="built_in">test</span>) <span class="built_in">groups</span>=1001(<span class="built_in">test</span>)</span><br><span class="line"><span class="comment">#强制删除用户</span></span><br><span class="line">[root@centos8 ~]#userdel -rf <span class="built_in">test</span></span><br><span class="line">userdel: user <span class="built_in">test</span> is currently used by process 29909</span><br><span class="line">[root@centos8 ~]#<span class="built_in">id</span> <span class="built_in">test</span></span><br><span class="line"><span class="built_in">id</span>: ‘<span class="built_in">test</span>’: no such user</span><br></pre></td></tr></table></figure>
+<h3 id="查看用户相关的ID信息">查看用户相关的ID信息</h3>
+<p>id 命令可以查看用户的UID，GID等信息</p>
+<p>格式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">id</span> [OPTION]... [USER]</span><br></pre></td></tr></table></figure>
+<p>常见选项：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">-u: 显示UID</span><br><span class="line">-g: 显示GID</span><br><span class="line">-G: 显示用户所属的组的ID</span><br><span class="line">-n: 显示名称，需配合ugG使用</span><br></pre></td></tr></table></figure>
+<h3 id="切换用户或以其他用户身份执行命令"><strong>切换用户或以其他用户身份执行命令</strong></h3>
+<p>su: 即 switch user，命令可以切换用户身份，并且以指定用户的身份执行命令</p>
+<p>格式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">su [options...] [-] [user [args...]]</span><br></pre></td></tr></table></figure>
+<p>常见选项：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-l --login  su -l UserName  相当于 su - UserName</span><br><span class="line">-c, --<span class="built_in">command</span> &lt;<span class="built_in">command</span>&gt;     pass a single <span class="built_in">command</span> to the shell with -c</span><br></pre></td></tr></table></figure>
+<p>切换用户的方式：</p>
+<ul>
+<li>su UserName：非登录式切换，即不会读取目标用户的配置文件，不改变当前工作目录，即不完全切换</li>
+<li>su <code>-</code> UserName：登录式切换，会读取目标用户的配置文件，切换至自已的家目录，即完全切换</li>
+</ul>
+<p>说明：root su至其他用户无须密码；非root用户切换时需要密码</p>
+<p>注意：su 切换新用户后，使用 <code>exit</code> 退回至旧的用户身份，而不要再用 su 切换至旧用户，否则会生成很多的bash子进程，环境可能会混乱。</p>
+<p>换个身份执行命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">su [-] UserName -c <span class="string">&#x27;COMMAND&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 ~]#getent passwd mage</span><br><span class="line">mage:x:1001:1001::/home/mage:/bin/bash</span><br><span class="line">[root@centos8 ~]#usermod -s /bin/false mage</span><br><span class="line">[root@centos8 ~]#getent passwd mage</span><br><span class="line">mage:x:1001:1001::/home/mage:/bin/false</span><br><span class="line">[root@centos8 ~]#su - mage</span><br><span class="line">Last login: Fri Mar 27 09:18:57 CST 2020 on pts/0</span><br><span class="line">[root@centos8 ~]#<span class="built_in">whoami</span></span><br><span class="line">root</span><br></pre></td></tr></table></figure>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 ~]#su -s /sbin/nologin wang</span><br><span class="line">This account is currently not available.</span><br><span class="line">[root@centos8 ~]#<span class="built_in">whoami</span></span><br><span class="line">root</span><br><span class="line">[root@centos8 ~]#su -s /bin/false wang</span><br><span class="line">[root@centos8 ~]#<span class="built_in">whoami</span></span><br><span class="line">root</span><br></pre></td></tr></table></figure>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[wang@centos8 ~]<span class="variable">$su</span> - root -c <span class="string">&quot;getent shadow&quot;</span></span><br></pre></td></tr></table></figure>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@192 ~]# su - wang -c <span class="string">&#x27;touch wang.txt&#x27;</span></span><br><span class="line">[root@192 ~]# ll /home/wang/</span><br><span class="line">total 0</span><br><span class="line">-rw-r--r-- 1 wang wang 0 Jul  2 17:49 wang.txt</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 ~]#su bin</span><br><span class="line">This account is currently not available.</span><br><span class="line">[root@centos8 ~]#su -s /bin/bash bin</span><br><span class="line">bash-4.4$ <span class="built_in">whoami</span></span><br><span class="line">bin</span><br><span class="line">bash-4.4$</span><br><span class="line">[root@centos8 ~]#getent passwd tss</span><br><span class="line">tss:x:59:59:Account used by the trousers package to sandbox the tcsd </span><br><span class="line">daemon:/dev/null:/sbin/nologin</span><br><span class="line">[root@centos8 ~]#su - -s /bin/bash tss</span><br><span class="line">Last login: Fri Mar 27 09:46:43 CST 2020 on pts/0</span><br><span class="line">su: warning: cannot change directory to /dev/null: Not a directory</span><br><span class="line">-bash: /dev/null/.bash_profile: Not a directory</span><br><span class="line">[tss@centos8 root]<span class="variable">$pwd</span></span><br><span class="line">/root</span><br><span class="line">[tss@centos8 root]<span class="variable">$whoami</span></span><br><span class="line">tss</span><br></pre></td></tr></table></figure>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 ~]#getent passwd bin</span><br><span class="line">bin:x:1:1:bin:/bin:/sbin/nologin</span><br><span class="line">[root@centos8 ~]#su -c <span class="string">&#x27;whoami&#x27;</span> bin</span><br><span class="line">nologin: invalid option -- <span class="string">&#x27;c&#x27;</span></span><br><span class="line">Try <span class="string">&#x27;nologin --help&#x27;</span> <span class="keyword">for</span> more information.</span><br><span class="line">[root@centos8 ~]#su -s /bin/bash -c <span class="string">&#x27;whoami&#x27;</span> bin</span><br><span class="line">bin</span><br></pre></td></tr></table></figure>
+<h3 id="设置密码">设置密码</h3>
+<p><img src="/%E7%94%A8%E6%88%B7%E3%80%81%E7%BB%84%E5%92%8C%E6%9D%83%E9%99%90.assets/Snipaste_2025-07-02_17-52-50.png" alt="Snipaste_2025-07-02_17-52-50"></p>
+<p>passwd 可以修改用户密码</p>
+<p>格式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">passwd [OPTIONS] UserName</span><br></pre></td></tr></table></figure>
+<p>常用选项：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">-d：删除指定用户密码</span><br><span class="line">-l：锁定指定用户</span><br><span class="line">-u：解锁指定用户</span><br><span class="line">-e：强制用户下次登录修改密码</span><br><span class="line">-f：强制操作</span><br><span class="line">-n mindays：指定最短使用期限</span><br><span class="line">-x maxdays：最大使用期限</span><br><span class="line">-w warndays：提前多少天开始警告</span><br><span class="line">-i inactivedays：非活动期限</span><br><span class="line">--stdin：从标准输入接收用户密码,Ubuntu无此选项</span><br></pre></td></tr></table></figure>
+<p>范例：非交互式修改用户密码</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#此方式更通用，适用于各种Linux版本，如:ubuntu</span></span><br><span class="line">[root@192 ~]# <span class="built_in">echo</span> -e <span class="string">&#x27;123456\n123456&#x27;</span> | passwd wang</span><br><span class="line">Changing password <span class="keyword">for</span> user wang.</span><br><span class="line">New password: BAD PASSWORD: The password is shorter than 8 characters</span><br><span class="line">Retype new password: passwd: all authentication tokens updated successfully.</span><br><span class="line"><span class="comment">#适用于红帽系列的Linux版本</span></span><br><span class="line">[root@centos8 ~]#<span class="built_in">echo</span> <span class="string">&#x27;123456&#x27;</span> | passwd --stdin mage</span><br><span class="line">Changing password <span class="keyword">for</span> user mage.</span><br><span class="line">passwd: all authentication tokens updated successfully.</span><br><span class="line"><span class="comment">#生成随机密码</span></span><br><span class="line">[root@centos8 ~]#yum -y install expect</span><br><span class="line">[root@centos8 ~]#mkpasswd -l 8 -c 2 -C 2 -d 2 -s 2 |<span class="built_in">tee</span> passwd.txt | passwd --</span><br><span class="line">stdin wang</span><br><span class="line">Changing password <span class="keyword">for</span> user wang.</span><br><span class="line">passwd: all authentication tokens updated successfully.</span><br><span class="line">[root@centos8 ~]#<span class="built_in">cat</span> passwd.txt </span><br><span class="line">1Q!9Lnl]</span><br></pre></td></tr></table></figure>
+<p>范例: Ubuntu 非交互式修改用户密码</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@ubuntu1804 ~]#<span class="built_in">echo</span> wang:centos |chpasswd</span><br><span class="line">[root@ubuntu1804 ~]#passwd wang &lt;&lt;<span class="string">EOF</span></span><br><span class="line"><span class="string">centos</span></span><br><span class="line"><span class="string">centos</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line">Enter new UNIX password: Retype new UNIX password: passwd: password updated </span><br><span class="line">successfully</span><br><span class="line">[root@ubuntu1804 ~]#<span class="built_in">echo</span> -e <span class="string">&#x27;magedu\nmagedu&#x27;</span> | passwd wang</span><br><span class="line">Enter new UNIX password: Retype new UNIX password: passwd: password updated </span><br><span class="line">successfully</span><br></pre></td></tr></table></figure>
+<p>范例：设置用户下次必须更改密码</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 ~]#useradd wang</span><br><span class="line">[root@centos8 ~]#<span class="built_in">echo</span> 123456 | passwd --stdin wang</span><br><span class="line">Changing password <span class="keyword">for</span> user wang.</span><br><span class="line">passwd: all authentication tokens updated successfully.</span><br><span class="line">[root@centos8 ~]#getent shadow wang</span><br><span class="line">wang:$6$4f78ko7hJ4fcMvIH<span class="variable">$lpbOkFfziDBLT</span>.8XBCi8c/N7wysDAejN5H9Fgxkt99HRDLTEosO43CK</span><br><span class="line">Yi2XSSVHxAK568Olj3C5bwfNExlves/:18348:0:99999:7:::</span><br><span class="line">[root@centos8 ~]#passwd -e wang</span><br><span class="line">Expiring password <span class="keyword">for</span> user wang.</span><br><span class="line">passwd: Success</span><br><span class="line">[root@centos8 ~]#getent shadow wang</span><br><span class="line">wang:$6$4f78ko7hJ4fcMvIH<span class="variable">$lpbOkFfziDBLT</span>.8XBCi8c/N7wysDAejN5H9Fgxkt99HRDLTEosO43CK</span><br><span class="line">Yi2XSSVHxAK568Olj3C5bwfNExlves/:0:0:99999:7:::</span><br><span class="line">[root@centos8 ~]#su - mage</span><br><span class="line">Last login: Fri Mar 27 09:55:27 CST 2020 on pts/0</span><br><span class="line">[mage@centos8 ~]<span class="variable">$su</span> - wang</span><br><span class="line">Password:</span><br><span class="line">You are required to change your password immediately (administrator enforced)</span><br><span class="line">Current password:</span><br><span class="line">New password:</span><br><span class="line">BAD PASSWORD: The password is shorter than 8 characters</span><br><span class="line">New password:</span><br><span class="line">BAD PASSWORD: The password fails the dictionary check - it is too </span><br><span class="line">simplistic/systematic</span><br><span class="line">su: Have exhausted maximum number of retries <span class="keyword">for</span> service</span><br><span class="line">[mage@centos8 ~]<span class="variable">$su</span> - wang</span><br><span class="line">Password:</span><br><span class="line">You are required to change your password immediately (administrator enforced)</span><br><span class="line">Current password:</span><br><span class="line">New password:</span><br><span class="line">Retype new password:</span><br><span class="line">Last login: Fri Mar 27 10:01:20 CST 2020 on pts/0</span><br><span class="line">Last failed login: Fri Mar 27 10:02:37 CST 2020 on pts/0</span><br><span class="line">There was 1 failed login attempt since the last successful login.</span><br><span class="line">[wang@centos8 ~]<span class="variable">$exit</span></span><br><span class="line"><span class="built_in">logout</span></span><br><span class="line">[mage@centos8 ~]<span class="variable">$exit</span></span><br><span class="line"><span class="built_in">logout</span></span><br><span class="line">[root@centos8 ~]#getent shadow wang</span><br><span class="line">wang:$6$TX0iLjF52ByHh1zH<span class="variable">$g</span>.WI4LNfauuwgnxpRhd7ePqFKHZ85YU3r6Lh2S0PWRXWGjGlDVtomLW</span><br><span class="line">qpdiWrT.vwqD/Wzok.kzQhUHc8UCs91:18348:0:99999:7:::</span><br></pre></td></tr></table></figure>
+<h3 id="修改用户密码策略"><strong>修改用户密码策略</strong></h3>
+<p>chage 可以修改用户密码策略</p>
+<p>格式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chage [OPTION]... LOGIN</span><br></pre></td></tr></table></figure>
+<p>常见选项：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-d LAST_DAY        <span class="comment">#更改密码的时间</span></span><br><span class="line">-m --mindays MIN_DAYS</span><br><span class="line">-M --maxdays MAX_DAYS</span><br><span class="line">-W --warndays WARN_DAYS</span><br><span class="line">-I --inactive INACTIVE <span class="comment">#密码过期后的宽限期</span></span><br><span class="line">-E --expiredate EXPIRE_DATE <span class="comment">#用户的有效期</span></span><br><span class="line">-l 显示密码策略</span><br></pre></td></tr></table></figure>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 ~]#chage wang</span><br><span class="line">Changing the aging information <span class="keyword">for</span> wang</span><br><span class="line">Enter the new value, or press ENTER <span class="keyword">for</span> the default</span><br><span class="line"> Minimum Password Age [0]: 3</span><br><span class="line"> Maximum Password Age [99999]: 42</span><br><span class="line"> Last Password Change (YYYY-MM-DD) [2021-03-14]: 2021-03-29    </span><br><span class="line"> Password Expiration Warning [7]: 10</span><br><span class="line"> Password Inactive [-1]: 20</span><br><span class="line"> Account Expiration Date (YYYY-MM-DD) [-1]: 2022-03-29</span><br><span class="line">[root@centos8 ~]#getent shadow wang</span><br><span class="line">wang:$6$UpJNaaFGwCqFBSN9<span class="variable">$MA4OMcJRJWbNPeMmQPvVjUcI4RYbGywipqYc9hlg87YUXvmpbi</span>.Zcni</span><br><span class="line">8ktdzw/DuECug4IBoEC/yXYv7dknu/0:18715:3:42:10:20:19080:</span><br><span class="line">[root@centos8 ~]#chage -m 3 -M 42 -W 14 -I 7 -E 2020-10-10 wang</span><br><span class="line">[root@centos8 ~]#chage -l wang</span><br><span class="line">Last password change : Dec 18, 2019</span><br><span class="line">Password expires : Jan 29, 2020</span><br><span class="line">Password inactive : Feb 05, 2020</span><br><span class="line">Account expires : Oct 10, 2020</span><br><span class="line">Minimum number of days between password change : 3</span><br><span class="line">Maximum number of days between password change : 42</span><br><span class="line">Number of days of warning before password expires : 14</span><br><span class="line">[root@centos8 ~]#getent shadow wang</span><br><span class="line">wang:$6$82L7A37XJgzKTegH<span class="variable">$lFzqrMHmFwW740U32bvWHUuakPDKOiULE</span>/CxcyDzSe1qi1X2ALulDw1</span><br><span class="line">WYrhd2wE00.lWO0im5//7biyV.juk5.:18248:3:42:14:7:18545:</span><br><span class="line"><span class="comment">#下一次登录强制重设密码</span></span><br><span class="line">[root@centos8 ~]#chage -d 0 wang</span><br><span class="line">[root@centos8 ~]#getent shadow wang</span><br><span class="line">wang:$6$82L7A37XJgzKTegH<span class="variable">$lFzqrMHmFwW740U32bvWHUuakPDKOiULE</span>/CxcyDzSe1qi1X2ALulDw1</span><br><span class="line">WYrhd2wE00.lWO0im5//7biyV.juk5.:0:3:42:14:7:18545:</span><br><span class="line">[root@centos8 ~]#chage -l wang</span><br><span class="line">Last password change : password must be changed</span><br><span class="line">Password expires : password must be changed</span><br><span class="line">Password inactive : password must be changed</span><br><span class="line">Account expires : Oct 10, 2020</span><br><span class="line">Minimum number of days between password change : 3</span><br><span class="line">Maximum number of days between password change : 42</span><br><span class="line">Number of days of warning before password expires : 14</span><br><span class="line">[root@centos8 ~]#getent shadow wang</span><br><span class="line">wang:$6$82L7A37XJgzKTegH<span class="variable">$lFzqrMHmFwW740U32bvWHUuakPDKOiULE</span>/CxcyDzSe1qi1X2ALulDw1</span><br><span class="line">WYrhd2wE00.lWO0im5//7biyV.juk5.:0:3:42:14:7:18545:</span><br></pre></td></tr></table></figure>
+<h3 id="创建组"><strong>创建组</strong></h3>
+<p>groupadd实现创建组</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#格式</span></span><br><span class="line">groupadd [OPTION]... group_name</span><br></pre></td></tr></table></figure>
+<p>常见选项：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-g GID 指明GID号；[GID_MIN, GID_MAX]</span><br><span class="line">-r 创建系统组，CentOS 6之前: ID&lt;500，CentOS 7以后: ID&lt;1000</span><br></pre></td></tr></table></figure>
+<p>范例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">groupadd -g 48 -r apache</span><br></pre></td></tr></table></figure>
+<h3 id="修改组"><strong>修改组</strong></h3>
+<p>groupmod 组属性修改</p>
+<p>格式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">groupmod [OPTION]... group</span><br></pre></td></tr></table></figure>
+<p>常见选项：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-n group_name: 新名字</span><br><span class="line">-g GID: 新的GID</span><br></pre></td></tr></table></figure>
+<h3 id="组删除"><strong>组删除</strong></h3>
+<p>groupdel 可以删除组</p>
+<p>格式</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">groupdel [options] GROUP</span><br></pre></td></tr></table></figure>
+<p>常见选项：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-f, --force 强制删除，即使是用户的主组也强制删除组,但会导致无主组的用户不可用无法登录</span><br></pre></td></tr></table></figure>
+<h3 id="更改组成员和密码"><strong>更改组成员和密码</strong></h3>
+<p>gpasswd命令，可以更改组密码，也可以修改附加组的成员关系</p>
+<p>格式</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gpasswd [OPTION] GROUP</span><br></pre></td></tr></table></figure>
+<p>常见选项：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">-a user 将user添加至指定组中</span><br><span class="line">-d user 从指定附加组中移除用户user</span><br><span class="line">-A user1,user2,... 设置有管理权限的用户列表</span><br></pre></td></tr></table></figure>
+<p>范例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#增加组成员</span></span><br><span class="line">[root@centos8 ~]#groupadd admins</span><br><span class="line">[root@centos8 ~]#<span class="built_in">id</span> wang</span><br><span class="line">uid=1000(wang) gid=1000(wang) <span class="built_in">groups</span>=1000(wang)</span><br><span class="line">[root@centos8 ~]#gpasswd -a wang admins</span><br><span class="line">Adding user wang to group admins</span><br><span class="line">[root@centos8 ~]#<span class="built_in">id</span> wang</span><br><span class="line">uid=1000(wang) gid=1000(wang) <span class="built_in">groups</span>=1000(wang),1002(admins)</span><br><span class="line">[root@centos8 ~]#<span class="built_in">groups</span> wang</span><br><span class="line">wang : wang admins</span><br><span class="line">[root@centos8 ~]#getent group admins</span><br><span class="line">admins:x:1002:wang</span><br><span class="line"><span class="comment">#删除组成员</span></span><br><span class="line">[root@centos8 ~]#gpasswd -d wang admins</span><br><span class="line">Removing user wang from group admins</span><br><span class="line">[root@centos8 ~]#<span class="built_in">groups</span> wang</span><br><span class="line">wang : wang</span><br><span class="line">[root@centos8 ~]#<span class="built_in">id</span> wang</span><br><span class="line">uid=1000(wang) gid=1000(wang) <span class="built_in">groups</span>=1000(wang)</span><br><span class="line">[root@centos8 ~]#getent group admins</span><br><span class="line">admins:x:1002:</span><br></pre></td></tr></table></figure>
+<h3 id="更改和查看组成员"><strong>更改和查看组成员</strong></h3>
+<p>groupmems 可以管理附加组的成员关系</p>
+<p>格式</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">groupmems [options] [action]</span><br></pre></td></tr></table></figure>
+<p>常见选项：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-g, --group groupname  <span class="comment">#更改为指定组 (只有root)</span></span><br><span class="line">-a, --add username   <span class="comment">#指定用户加入组</span></span><br><span class="line">-d, --delete username <span class="comment">#从组中删除用户</span></span><br><span class="line">-p, --purge        <span class="comment">#从组中清除所有成员</span></span><br><span class="line">-l, --list         <span class="comment">#显示组成员列表</span></span><br></pre></td></tr></table></figure>
+<p>groups 可查看用户组关系</p>
+<p>格式</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#查看用户所属组列表</span></span><br><span class="line"><span class="built_in">groups</span> [OPTION].[USERNAME]...</span><br></pre></td></tr></table></figure>
+<p>范例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 ~]#groupmems -l -g admins</span><br><span class="line">[root@centos8 ~]#groupmems -a mage -g admins</span><br><span class="line">[root@centos8 ~]#<span class="built_in">id</span> mage</span><br><span class="line">uid=1001(mage) gid=1001(mage) <span class="built_in">groups</span>=1001(mage),1002(admins)</span><br><span class="line">[root@centos8 ~]#groupmems -l -g admins</span><br><span class="line">mage </span><br><span class="line">[root@centos8 ~]#groupmems -a wang -g admins</span><br><span class="line">[root@centos8 ~]#groupmems -l -g admins</span><br><span class="line">mage wang </span><br><span class="line">[root@centos8 ~]#groupmems -d wang -g admins</span><br><span class="line">[root@centos8 ~]#<span class="built_in">groups</span> wang</span><br><span class="line">wang : wang</span><br><span class="line">[root@centos8 ~]#groupmems -l -g admins</span><br><span class="line">mage </span><br><span class="line">[root@centos8 ~]#groupmems -p -g admins</span><br><span class="line">[root@centos8 ~]#groupmems -l -g admins</span><br></pre></td></tr></table></figure>
+<h3 id="练习"><strong>练习</strong></h3>
+<ol>
+<li>创建用户gentoo，附加组为bin和root，默认shell为/bin/csh，注释信息为&quot;Gentoo Distribution&quot;</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@192 ~]# useradd -G bin,root -s /bin/csh -c <span class="string">&quot;Gentoo Distribution&quot;</span> gentoo</span><br><span class="line">useradd: Warning: missing or non-executable shell <span class="string">&#x27;/bin/csh&#x27;</span></span><br><span class="line">[root@192 ~]# <span class="built_in">id</span> gentoo</span><br><span class="line">uid=1004(gentoo) gid=1004(gentoo) <span class="built_in">groups</span>=1004(gentoo),0(root),1(bin)</span><br><span class="line">[root@192 ~]# <span class="built_in">cat</span> /etc/passwd | grep gentoo</span><br><span class="line">gentoo:x:1004:1004:Gentoo Distribution:/home/gentoo:/bin/csh</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>创建下面的用户、组和组成员关系<br>
+名字为webs 的组<br>
+用户nginx，使用webs 作为附加组<br>
+用户varnish，使用webs 作为附加组<br>
+用户mysql，不可交互登录系统，且不是webs 的成员，nginx，varnish，mysql密码都是123456</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">groupadd webs</span><br><span class="line">useradd -G webs nginx</span><br><span class="line">useradd -G webs varnish</span><br><span class="line">useradd -s /sbin/nologin mysql</span><br><span class="line"><span class="built_in">echo</span> 123456 | passwd --stdin nginx</span><br><span class="line"><span class="built_in">echo</span> 123456 | passwd --stdin varnish</span><br><span class="line"><span class="built_in">echo</span> 123456 | passwd --stdin mysql</span><br></pre></td></tr></table></figure>
+<h2 id="文件权限管理"><strong>文件权限管理</strong></h2>
+<p>程序访问文件时的权限，取决于此程序的发起者</p>
+<ul>
+<li>进程的发起者，同文件的属主：则应用文件属主权限</li>
+<li>进程的发起者，属于文件属组；则应用文件属组权限</li>
+<li>应用文件“其它”权限</li>
+</ul>
+<p><img src="/%E7%94%A8%E6%88%B7%E3%80%81%E7%BB%84%E5%92%8C%E6%9D%83%E9%99%90.assets/image-20250702182635536.png" alt="image-20250702182635536"></p>
+<h3 id="文件所有者和属组属性操作"><strong>文件所有者和属组属性操作</strong></h3>
+<h4 id="设置文件的所有者chown">设置文件的所有者chown</h4>
+<p>chown 命令可以修改文件的属主，也可以修改文件属组</p>
+<p>格式</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chown</span> [OPTION]... [OWNER][:[GROUP]] FILE...</span><br><span class="line"><span class="built_in">chown</span> [OPTION]... --reference=RFILE FILE...</span><br></pre></td></tr></table></figure>
+<p>用法说明：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">OWNER  <span class="comment">#只修改所有者</span></span><br><span class="line">OWNER:GROUP <span class="comment">#同时修改所有者和属组</span></span><br><span class="line">:GROUP  <span class="comment">#只修改属组，冒号也可用 . 替换</span></span><br><span class="line">--reference=RFILE <span class="comment">#参考指定的的属性，来修改  </span></span><br><span class="line">-R <span class="comment">#递归，此选项慎用，非常危险！</span></span><br></pre></td></tr></table></figure>
+<p>范例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 data]#<span class="built_in">cp</span> /etc/fstab f1.txt</span><br><span class="line">[root@centos8 data]#<span class="built_in">pwd</span></span><br><span class="line">/data</span><br><span class="line">[root@centos8 data]#ll</span><br><span class="line">total 4</span><br><span class="line">-rw-r--r-- 1 root root 709 Dec 18 10:13 f1.txt</span><br><span class="line">[root@centos8 data]#<span class="built_in">chown</span> wang f1.txt</span><br><span class="line">[root@centos8 data]#ll</span><br><span class="line">total 4</span><br><span class="line">-rw-r--r-- 1 wang root 709 Dec 18 10:13 f1.txt</span><br><span class="line">[root@centos8 data]#<span class="built_in">chown</span> :admins f1.txt</span><br><span class="line">[root@centos8 data]#ll f1.txt</span><br><span class="line">-rw-r--r-- 1 wang admins 709 Dec 18 10:13 f1.txt</span><br><span class="line">[root@centos8 data]#<span class="built_in">chown</span> root.bin f1.txt</span><br><span class="line">[root@centos8 data]#ll </span><br><span class="line">total 4</span><br><span class="line">-rw-r--r-- 1 root bin 709 Dec 18 10:13 f1.txt</span><br><span class="line">[root@centos8 data]#<span class="built_in">chown</span> wang:admins f1.txt</span><br><span class="line">[root@centos8 data]#ll</span><br><span class="line">total 4</span><br><span class="line">-rw-r--r-- 1 wang admins 709 Dec 18 10:13 f1.txt</span><br><span class="line">[root@centos8 data]#<span class="built_in">cp</span> /etc/issue f2.txt</span><br><span class="line">[root@centos8 data]#ll</span><br><span class="line">total 8</span><br><span class="line">-rw-r--r-- 1 wang admins 709 Dec 18 10:13 f1.txt</span><br><span class="line">-rw-r--r-- 1 root root  23 Dec 18 10:15 f2.txt</span><br><span class="line">[root@centos8 data]#<span class="built_in">chown</span> --reference=f1.txt f2.txt</span><br><span class="line">[root@centos8 data]#ll</span><br><span class="line">total 8</span><br><span class="line">-rw-r--r-- 1 wang admins 709 Dec 18 10:13 f1.txt</span><br><span class="line">-rw-r--r-- 1 wang admins 23 Dec 18 10:15 f2.txt</span><br></pre></td></tr></table></figure>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 ~]#<span class="built_in">chown</span> -R wang.admins /data/</span><br></pre></td></tr></table></figure>
+<h4 id="设置文件的属组信息chgrp">设置文件的属组信息chgrp</h4>
+<p>chgrp 命令可以只修改文件的属组</p>
+<p>格式</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chgrp</span> [OPTION]... GROUP FILE...</span><br><span class="line"><span class="built_in">chgrp</span> [OPTION]... --reference=RFILE FILE...</span><br></pre></td></tr></table></figure>
+<p>-R 递归</p>
+<p>范例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 data]#ll f1.txt</span><br><span class="line">-rw-r--r-- 1 wang root 709 Dec 18 10:13 f1.txt</span><br><span class="line">[root@centos8 data]#<span class="built_in">chgrp</span> admins f1.txt </span><br><span class="line">[root@centos8 data]#ll f1.txt</span><br><span class="line">-rw-r--r-- 1 wang admins 709 Dec 18 10:13 f1.txt</span><br></pre></td></tr></table></figure>
+<h3 id="文件权限"><strong>文件权限</strong></h3>
+<h4 id="文件权限说明"><strong>文件权限说明</strong></h4>
+<p>文件的权限主要针对三类对象进行定义</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">owner 属主, u</span><br><span class="line">group 属组, g</span><br><span class="line">other 其他, o</span><br></pre></td></tr></table></figure>
+<p>注意：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">用户的最终权限，是从左向右进行顺序匹配，即，所有者，所属组，其他人，一旦匹配权限立即生效，不再向</span><br><span class="line">右查看其权限</span><br><span class="line">r和w权限对root 用户无效</span><br><span class="line">只要所有者,所属组或other三者之一有x权限,root就可以执行</span><br></pre></td></tr></table></figure>
+<p>每个文件针对每类访问者都定义了三种常用权限</p>
+<p>每个文件针对每类访问者都定义了三种权限</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">r Readable 4</span><br><span class="line">w Writable 2</span><br><span class="line">x eXcutable 1</span><br></pre></td></tr></table></figure>
+<p><strong>对文件的权限：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">r 可使用文件查看类工具，比如：<span class="built_in">cat</span>，可以获取其内容</span><br><span class="line">w 可修改其内容,文件的是否被删除和文件的权限无关</span><br><span class="line">x 可以把此文件提请内核启动为一个进程，即可以执行（运行）此文件（此文件的内容必须是可执行）</span><br><span class="line">文件权限常见组合</span><br><span class="line">--- 0</span><br><span class="line">r  4</span><br><span class="line">r-x 5 </span><br><span class="line">rw 6</span><br><span class="line">rwx 7</span><br></pre></td></tr></table></figure>
+<p><strong>对目录的权限：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">r 可以使用<span class="built_in">ls</span>查看此目录中文件名列表,但无法看到文件的属性meta信息,包括inode号,不能查看文件的</span><br><span class="line">内容</span><br><span class="line">w 可在此目录中创建文件，也可删除此目录中的文件，而和此被删除的文件的权限无关</span><br><span class="line">x 可以<span class="built_in">cd</span>进入此目录，可以使用<span class="built_in">ls</span> -l file或<span class="built_in">stat</span> file 查看此目录中指定文件的元数据，当预先知</span><br><span class="line">道文件名称时,也可以查看文件的内容,属于目录的可访问的最小权限</span><br><span class="line">X 分配给目录或有部分x权限的文件的x权限，对无任意x权限的文件则不会分配x权限</span><br><span class="line">目录权限常见组合</span><br><span class="line">-  不能访问目录</span><br><span class="line">r-x 只读目录</span><br><span class="line">rwx 可读也可写目录</span><br></pre></td></tr></table></figure>
+<p>面试题：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Linux中的目录和文件的权限区别？分别说明读，写和执行权限的区别</span><br></pre></td></tr></table></figure>
+<p>文件权限：</p>
+<ol>
+<li><strong>读（r）</strong>：允许查看文件内容。</li>
+<li><strong>写（w）</strong>：允许修改文件内容。</li>
+<li><strong>执行（x）</strong>：允许运行文件（如果文件是可执行程序或脚本）。</li>
+</ol>
+<p>目录权限：</p>
+<ol>
+<li><strong>读（r）</strong>：允许查看目录中的文件列表。</li>
+<li><strong>写（w）</strong>：允许在目录中创建、删除文件或子目录。</li>
+<li><strong>执行（x）</strong>：允许进入目录（即访问目录内容）。</li>
+</ol>
+<p>总结来说，文件的执行权限用于运行文件，而目录的执行权限用于访问目录</p>
+<p><img src="/%E7%94%A8%E6%88%B7%E3%80%81%E7%BB%84%E5%92%8C%E6%9D%83%E9%99%90.assets/image-20250702184153223.png" alt="image-20250702184153223"></p>
+<p>八进制数字</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">--- 000 0</span><br><span class="line">--x 001 1</span><br><span class="line">-w- 010 2</span><br><span class="line">-wx 011 3</span><br><span class="line">r-- 100 4</span><br><span class="line">r-x 101 5</span><br><span class="line">rw- 110 6</span><br><span class="line">rwx 111 7</span><br></pre></td></tr></table></figure>
+<p>例如：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rw-r----- 640 </span><br><span class="line">rwxr-xr-x 755</span><br></pre></td></tr></table></figure>
+<h4 id="修改文件权限chmod">修改文件权限chmod</h4>
+<p>格式</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chmod</span> [OPTION]... MODE[,MODE]... FILE...</span><br><span class="line"><span class="built_in">chmod</span> [OPTION]... OCTAL-MODE FILE...</span><br><span class="line"><span class="comment">#参考RFILE文件的权限，将FILE的修改为同RFILE</span></span><br><span class="line"><span class="built_in">chmod</span> [OPTION]... --reference=RFILE FILE...</span><br></pre></td></tr></table></figure>
+<p>说明： 模式法格式</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">MODE：<span class="built_in">who</span> opt permission</span><br><span class="line"><span class="built_in">who</span>:u,g,o,a </span><br><span class="line">opt:+,-,=</span><br><span class="line">permission:r,w,x</span><br><span class="line">修改指定一类用户的所有权限</span><br><span class="line">u= g= o= ug= a= u=,g=</span><br><span class="line">修改指定一类用户某个或某个权限</span><br><span class="line">u+ u- g+ g- o+ o- a+ a- + -</span><br><span class="line">-R: 递归修改权限</span><br></pre></td></tr></table></figure>
+<p>范例: 设置 X 权限</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 data]#ll <span class="built_in">dir</span></span><br><span class="line">total 8</span><br><span class="line">-rw-r--r-- 1 root root 709 Dec 18 11:09 f1.txt</span><br><span class="line">-rwxr--r-- 1 root root 709 Dec 18 11:09 f2.txt</span><br><span class="line">drw-r--r-- 2 root root  6 Dec 18 11:15 subdir</span><br><span class="line">[root@centos8 data]#ll -d <span class="built_in">dir</span></span><br><span class="line">drwxr-xr-- 3 root root 48 Dec 18 11:15 <span class="built_in">dir</span></span><br><span class="line">[root@centos8 data]#<span class="built_in">chmod</span> -R a+X <span class="built_in">dir</span></span><br><span class="line">[root@centos8 data]#ll -d <span class="built_in">dir</span></span><br><span class="line">drwxr-xr-x 3 root root 48 Dec 18 11:15 <span class="built_in">dir</span></span><br><span class="line">[root@centos8 data]#ll <span class="built_in">dir</span></span><br><span class="line">total 8</span><br><span class="line">-rw-r--r-- 1 root root 709 Dec 18 11:09 f1.txt</span><br><span class="line">-rwxr-xr-x 1 root root 709 Dec 18 11:09 f2.txt</span><br><span class="line">drwxr-xr-x 2 root root  6 Dec 18 11:15 subdir</span><br></pre></td></tr></table></figure>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chmod</span> u+wx,g-r,o=rx file</span><br><span class="line"><span class="built_in">chmod</span> -R g+rwX /testdir</span><br><span class="line"><span class="built_in">chmod</span> 600 file</span><br></pre></td></tr></table></figure>
+<p><strong>范例：面试题</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">执行 <span class="built_in">cp</span> /etc/issue /data/dir/ 所需要的最小权限？</span><br><span class="line">/bin/cp 需要x权限</span><br><span class="line">/etc/ 需要x权限</span><br><span class="line">/etc/issue 需要r权限</span><br><span class="line">/data 需要x权限</span><br><span class="line">/data/dir 需要w,x权限</span><br></pre></td></tr></table></figure>
+<h3 id="新建文件和目录的默认权限"><strong>新建文件和目录的默认权限</strong></h3>
+<p>umask 的值可以用来保留在创建文件权限</p>
+<p>实现方式：</p>
+<ul>
+<li>新建文件的默认权限: 666-umask，如果所得结果某位存在执行（奇数）权限，则将其权限+1,偶数不变</li>
+<li>新建目录的默认权限: 777-umask</li>
+</ul>
+<p>非特权用户umask默认是 002</p>
+<p>root的umask 默认是 022</p>
+<p>查看umask</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">umask</span></span><br><span class="line"><span class="comment">#模式方式显示</span></span><br><span class="line"><span class="built_in">umask</span> –S </span><br><span class="line"><span class="comment">#输出可被调用</span></span><br><span class="line"><span class="built_in">umask</span> –p</span><br></pre></td></tr></table></figure>
+<p>修改umask</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">umask</span> <span class="comment">#</span></span><br></pre></td></tr></table></figure>
+<p>范例</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">umask</span> 002</span><br><span class="line"><span class="built_in">umask</span> u=rw,g=r,o=</span><br></pre></td></tr></table></figure>
+<p>持久保存umask</p>
+<ul>
+<li>全局设置： /etc/bashrc</li>
+<li>用户设置：~/.bashrc</li>
+</ul>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 ~]#<span class="built_in">umask</span></span><br><span class="line">0022</span><br><span class="line">[root@centos8 ~]#( <span class="built_in">umask</span> 666; <span class="built_in">touch</span> /data/f1.txt )</span><br><span class="line">[root@centos8 ~]#<span class="built_in">umask</span></span><br><span class="line">0022</span><br><span class="line">[root@centos8 ~]#ll /data/f1.txt</span><br><span class="line">---------- 1 root root 0 Mar 27 14:55 /data/f1.txt</span><br></pre></td></tr></table></figure>
+<p><strong>练习</strong></p>
+<p>1.当用户docker对/testdir 目录无执行权限时，意味着无法做哪些操作？</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1.进入该目录（<span class="built_in">cd</span> /testdir 失败）  </span><br><span class="line">2.访问目录中的文件或子目录  </span><br><span class="line">3.执行该目录下的可执行文件  </span><br><span class="line">4.正常挂载或访问作为 volume 的该目录 </span><br></pre></td></tr></table></figure>
+<p>2.当用户mongodb对/testdir 目录无读权限时，意味着无法做哪些操作？</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1.使用 <span class="built_in">ls</span> /testdir 查看目录内容。  </span><br><span class="line">2.列出该目录下的文件名和子目录。  </span><br><span class="line">3.通过路径访问目录内的文件（即使知道文件名，也可能受限）。  </span><br><span class="line">4.在程序中读取或扫描该目录中的文件列表。   </span><br></pre></td></tr></table></figure>
+<p>3.当用户redis 对/testdir 目录无写权限时，该目录下的只读文件file1是否可修改和删除？</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1.不能删除 file1 （因为删除文件需要对目录 有写权限）</span><br><span class="line">2.不能修改 file1的内容 （因为修改需要先打开文件，通常也需要对文件本身有写权限）</span><br><span class="line"></span><br><span class="line">但如果 file1 本身是只读的（如只有读权限），即使用户对目录有写权限，也不能修改它的内容。 但是可以删除他</span><br></pre></td></tr></table></figure>
+<p>4.当用户zabbix对/testdir 目录有写和执行权限时，该目录下的只读文件file1是否可修改和删除？</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1.可以删除 file1 （因为删除文件只需要对目录 有写权限）</span><br><span class="line">2.不能修改 file1 的内容 （因为文件本身是只读的，需要对文件 有写权限才能修改）</span><br></pre></td></tr></table></figure>
+<p>5.复制/etc/fstab文件到/var/tmp下，设置文件所有者为tomcat读写权限，所属组为apps组有读写权限，其他人无权限</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cp</span> /etc/fstab /var/tmp/</span><br><span class="line"><span class="built_in">chown</span> tomcat:apps /var/tmp/fstab</span><br><span class="line"><span class="built_in">chmod</span> 660 /var/tmp/fstab</span><br></pre></td></tr></table></figure>
+<ul>
+<li>所有者（tomcat）：读写权限 <code>rw-</code> → <code>6</code></li>
+<li>所属组（apps）：读写权限 <code>rw-</code> → <code>6</code></li>
+<li>其他人：无权限 <code>---</code> → <code>0</code></li>
+</ul>
+<p>6.误删除了用户git的家目录，请重建并恢复该用户家目录及相应的权限属性</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">useradd git        <span class="comment"># 如果用户不存在</span></span><br><span class="line"><span class="built_in">mkdir</span> -p /home/git</span><br><span class="line"><span class="built_in">cp</span> -r /etc/skel/. /home/git/</span><br><span class="line"><span class="built_in">chown</span> -R git:git /home/git</span><br><span class="line"><span class="built_in">chmod</span> 700 /home/git</span><br></pre></td></tr></table></figure>
+<h3 id="Linux文件系统上的特殊权限"><strong>Linux文件系统上的特殊权限</strong></h3>
+<p>前面介绍了三种常见的权限：r, w, x 还有三种特殊权限：SUID, SGID, Sticky</p>
+<p>特殊权限</p>
+<ul>
+<li>SUID 作用于二进制可执行文件上,用户将继承此程序所有者的权限</li>
+<li>SGID 作用于二进制可执行文件上,用户将继承此程序所有组的权限作于于目录上, 此目录中新建的文件的所属组将自动从此目录继承</li>
+<li>STICKY 作用于目录上,此目录中的文件只能由所有者自已来删除</li>
+</ul>
+<h4 id="特殊权限SUID">特殊权限SUID</h4>
+<p>前提：进程有属主和属组；文件有属主和属组</p>
+<ul>
+<li>任何一个可执行程序文件能不能启动为进程,取决发起者对程序文件是否拥有执行权限</li>
+<li>启动为进程之后，其进程的属主为发起者,进程的属组为发起者所属的组</li>
+<li>进程访问文件时的权限，取决于进程的发起者</li>
+</ul>
+<p>二进制的可执行文件上SUID权限功能：</p>
+<ul>
+<li>任何一个可执行程序文件能不能启动为进程：取决发起者对程序文件是否拥有执行权限</li>
+<li>启动为进程之后，其进程的属主为原程序文件的属主</li>
+<li>SUID只对二进制可执行程序有效</li>
+<li>SUID设置在目录上无意义</li>
+</ul>
+<p>SUID权限设定：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chmod</span> u+s FILE...</span><br><span class="line"><span class="built_in">chmod</span> 4xxx FILE</span><br><span class="line"><span class="built_in">chmod</span> u-s FILE...</span><br></pre></td></tr></table></figure>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 ~]#<span class="built_in">ls</span> -l /usr/bin/passwd</span><br><span class="line">-rwsr-xr-x. 1 root root 34928 May 11 2019 /usr/bin/passwd</span><br></pre></td></tr></table></figure>
+<h4 id="特殊权限SGID">特殊权限SGID</h4>
+<p>二进制的可执行文件上SGID权限功能：</p>
+<ul>
+<li>任何一个可执行程序文件能不能启动为进程：取决发起者对程序文件是否拥有执行权限</li>
+<li>启动为进程之后，其进程的属组为原程序文件的属组</li>
+</ul>
+<p>SGID权限设定：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chmod</span> g+s FILE... </span><br><span class="line"><span class="built_in">chmod</span> 2xxx FILE</span><br><span class="line"><span class="built_in">chmod</span> g-s FILE...</span><br></pre></td></tr></table></figure>
+<p>目录上的SGID权限功能：</p>
+<p>默认情况下，用户创建文件时，其属组为此用户所属的主组，一旦某目录被设定了SGID，则对此目录有</p>
+<p>写权限的用户在此目录中创建的文件所属的组为此目录的属组，通常用于创建一个协作目录</p>
+<p>SGID权限设定：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chmod</span> g+s DIR...</span><br><span class="line"><span class="built_in">chmod</span> 2xxx DIR</span><br><span class="line"><span class="built_in">chmod</span> g-s DIR...</span><br></pre></td></tr></table></figure>
+<h4 id="特殊权限-Sticky-位"><strong>特殊权限</strong> <strong>Sticky</strong> 位</h4>
+<p>具有写权限的目录通常用户可以删除该目录中的任何文件，无论该文件的权限或拥有权</p>
+<p>在目录设置Sticky 位，只有文件的所有者或root可以删除该文件</p>
+<p>sticky 设置在文件上无意义</p>
+<p>Sticky权限设定：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chmod</span> o+t DIR...</span><br><span class="line"><span class="built_in">chmod</span> 1xxx DIR</span><br><span class="line"><span class="built_in">chmod</span> o-t DIR...</span><br></pre></td></tr></table></figure>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 ~]#ll -d /tmp</span><br><span class="line">drwxrwxrwt. 15 root root 4096 Dec 12 20:16 /tmp</span><br></pre></td></tr></table></figure>
+<h4 id="特殊权限数字法"><strong>特殊权限数字法</strong></h4>
+<p>SUID SGID STICKY</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">000 0</span><br><span class="line">001 1</span><br><span class="line">010 2</span><br><span class="line">011 3</span><br><span class="line">100 4</span><br><span class="line">101 5</span><br><span class="line">110 6</span><br><span class="line">111 7</span><br></pre></td></tr></table></figure>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chmod</span> 4777 /tmp/a.txt</span><br></pre></td></tr></table></figure>
+<p>权限位映射</p>
+<p>SUID: user,占据属主的执行权限位</p>
+<p>s：属主拥有x权限</p>
+<p>S：属主没有x权限</p>
+<p>SGID: group,占据属组的执行权限位</p>
+<p>s： group拥有x权限</p>
+<p>S：group没有x权限</p>
+<p>Sticky: other,占据other的执行权限位</p>
+<p>t：other拥有x权限</p>
+<p>T：other没有x权限</p>
+<h3 id="设定文件特殊属性">设定文件特殊属性</h3>
+<p>设置文件的特殊属性，可以访问 root 用户误操作删除或修改文件</p>
+<p>不能删除，改名，更改</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chattr +i file</span><br></pre></td></tr></table></figure>
+<p>只能追加内容，不能删除，改名</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chattr +a file</span><br></pre></td></tr></table></figure>
+<p>显示特定属性</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsattr</span><br></pre></td></tr></table></figure>
+<p>范例</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 data]#chattr +i <span class="built_in">dir</span></span><br><span class="line">[root@centos8 data]#lsattr <span class="built_in">dir</span></span><br><span class="line">------------------ <span class="built_in">dir</span>/fstab</span><br><span class="line">------------------ <span class="built_in">dir</span>/f1.txt</span><br><span class="line">[root@centos8 data]#lsattr *</span><br><span class="line">------------------ <span class="built_in">dir</span>/fstab</span><br><span class="line">------------------ <span class="built_in">dir</span>/f1.txt</span><br><span class="line">------------------ f11.txt</span><br><span class="line">------------------ f22.txt</span><br><span class="line">[root@centos8 data]#ll</span><br><span class="line">total 8</span><br><span class="line">drwxr-xr-x 2 root root 33 Dec 18 14:32 <span class="built_in">dir</span></span><br><span class="line">-rw-r--r-- 1 root root 719 Dec 18 14:30 f11.txt</span><br><span class="line">-rw-r--r-- 1 root root  6 Dec 18 14:30 f22.txt</span><br><span class="line">[root@centos8 data]#<span class="built_in">rm</span> -rf <span class="built_in">dir</span></span><br><span class="line"><span class="built_in">rm</span>: cannot remove <span class="string">&#x27;dir/fstab&#x27;</span>: Operation not permitted</span><br><span class="line"><span class="built_in">rm</span>: cannot remove <span class="string">&#x27;dir/f1.txt&#x27;</span>: Operation not permitted</span><br><span class="line">[root@centos8 data]#lsattr </span><br><span class="line">------------------ ./f11.txt</span><br><span class="line">------------------ ./f22.txt</span><br><span class="line">----i------------- ./dir</span><br><span class="line">[root@centos8 data]#chattr -i <span class="built_in">dir</span></span><br><span class="line">[root@centos8 data]#lsattr </span><br><span class="line">------------------ ./f11.txt</span><br><span class="line">------------------ ./f22.txt</span><br><span class="line">------------------ ./dir</span><br></pre></td></tr></table></figure>
+<h3 id="访问控制列表-ACL">访问控制列表 ACL</h3>
+<h4 id="ACL权限功能">ACL权限功能</h4>
+<p>ACL：Access Control List，实现灵活的权限管理</p>
+<p>除了文件的所有者，所属组和其它人，可以对更多的用户设置权限</p>
+<p>CentOS7 默认创建的xfs和ext4文件系统具有ACL功能</p>
+<p>CentOS7 之前版本，默认手工创建的ext4文件系统无ACL功能,需手动增加</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tune2fs –o acl /dev/sdb1</span><br><span class="line">mount –o acl /dev/sdb1 /mnt/test</span><br></pre></td></tr></table></figure>
+<p>ACL生效顺序：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">所有者，自定义用户，所属组|自定义组，其他人</span><br></pre></td></tr></table></figure>
+<h4 id="ACL相关命令">ACL相关命令</h4>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">setfacl 可设置ACL权限</span><br><span class="line">getfacl 可查看设置的ACL权限</span><br></pre></td></tr></table></figure>
+<p>范例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 data]#ll f1.txt</span><br><span class="line">-rw-r--r-- 1 root root 709 Dec 18 14:37 f1.txt</span><br><span class="line">[root@centos8 data]#setfacl -m u:wang:- f1.txt</span><br><span class="line">[root@centos8 data]#ll </span><br><span class="line">total 4</span><br><span class="line">-rw-r--r--+ 1 root root 709 Dec 18 14:37 f1.txt</span><br><span class="line">[root@centos8 data]#getfacl f1.txt</span><br><span class="line"><span class="comment"># file: f1.txt</span></span><br><span class="line"><span class="comment"># owner: root</span></span><br><span class="line"><span class="comment"># group: root</span></span><br><span class="line">user::rwuser:wang:---</span><br><span class="line">group::r--</span><br><span class="line">mask::r--</span><br><span class="line">other::r--</span><br><span class="line">[root@centos8 data]#su wang</span><br><span class="line">[wang@centos8 data]<span class="variable">$cat</span> f1.txt</span><br><span class="line"><span class="built_in">cat</span>: f1.txt: Permission denied</span><br><span class="line">[wang@centos8 data]<span class="variable">$echo</span> xx &gt;&gt; f1.txt</span><br><span class="line">bash: f1.txt: Permission denied</span><br></pre></td></tr></table></figure>
+<p>范例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 data]#getfacl f1.txt</span><br><span class="line"><span class="comment"># file: f1.txt</span></span><br><span class="line"><span class="comment"># owner: root</span></span><br><span class="line"><span class="comment"># group: root</span></span><br><span class="line">user::rwgroup::r--</span><br><span class="line">other::r--</span><br><span class="line">[root@centos8 data]#setfacl -m u:wang:0 f1.txt</span><br><span class="line">[root@centos8 data]#setfacl -m g:admins:w f1.txt</span><br><span class="line">[root@centos8 data]#ll f1.txt</span><br><span class="line">-rw-rw-r--+ 1 root root 718 Dec 18 14:44 f1.txt</span><br><span class="line">[root@centos8 data]#getfacl f1.txt</span><br><span class="line"><span class="comment"># file: f1.txt</span></span><br><span class="line"><span class="comment"># owner: root</span></span><br><span class="line"><span class="comment"># group: root</span></span><br><span class="line">user::rwuser:wang:---</span><br><span class="line">group::r--</span><br><span class="line">group:admins:-wmask::rwother::r--</span><br><span class="line">[root@centos8 data]#<span class="built_in">id</span> wang</span><br><span class="line">uid=1000(wang) gid=1000(wang) <span class="built_in">groups</span>=1000(wang)</span><br><span class="line">[root@centos8 data]#<span class="built_in">id</span> mage</span><br><span class="line">uid=1001(mage) gid=1001(mage) <span class="built_in">groups</span>=1001(mage)</span><br><span class="line">[root@centos8 data]#su mage</span><br><span class="line">[mage@centos8 data]<span class="variable">$cat</span> f1.txt</span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># /etc/fstab</span></span><br><span class="line"><span class="comment"># Created by anaconda on Wed Dec 11 11:11:16 2019</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Accessible filesystems, by reference, are maintained under &#x27;/dev/disk/&#x27;.</span></span><br><span class="line"><span class="comment"># See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># After editing this file, run &#x27;systemctl daemon-reload&#x27; to update systemd</span></span><br><span class="line"><span class="comment"># units generated from this file.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">UUID=1b950ef9-7142-46bd-975c-c4ac1e0d47e8 /            xfs   </span><br><span class="line">defaults    0 0</span><br><span class="line">UUID=667a4c81-8b4b-4a39-a111-b11cb6d09309 /boot          ext4  </span><br><span class="line">defaults    1 2</span><br><span class="line">UUID=38d14714-c018-41d5-922c-49e415decbca /data          xfs   </span><br><span class="line">defaults    0 0</span><br><span class="line">UUID=a0efb2bb-8227-4317-a79d-0a70d515046c swap          swap  </span><br><span class="line">defaults    0 0</span><br><span class="line">magedata</span><br><span class="line">[mage@centos8 data]<span class="variable">$echo</span> magedata2 &gt;&gt; f1.txt</span><br><span class="line">bash: f1.txt: Permission denied</span><br><span class="line">[mage@centos8 data]<span class="variable">$exit</span></span><br><span class="line"><span class="built_in">exit</span></span><br><span class="line">[root@centos8 data]#gpasswd -a mage admins</span><br><span class="line">Adding user mage to group admins</span><br><span class="line">[root@centos8 data]#<span class="built_in">id</span> mage</span><br><span class="line">uid=1001(mage) gid=1001(mage) <span class="built_in">groups</span>=1001(mage),1002(admins)</span><br><span class="line">[root@centos8 data]#su mage</span><br><span class="line">[mage@centos8 data]<span class="variable">$echo</span> magedata3 &gt;&gt; f1.txt </span><br><span class="line">[mage@centos8 data]<span class="variable">$cat</span> f1.txt</span><br><span class="line"><span class="built_in">cat</span>: f1.txt: Permission denied</span><br><span class="line">[mage@centos8 data]<span class="variable">$exit</span></span><br><span class="line"><span class="built_in">exit</span></span><br><span class="line">[root@centos8 data]#su wang</span><br><span class="line">[wang@centos8 data]<span class="variable">$cat</span> f1.txt</span><br><span class="line"><span class="built_in">cat</span>: f1.txt: Permission denied</span><br><span class="line">[wang@centos8 data]<span class="variable">$echo</span> wangdata &gt;&gt; f1.txt</span><br><span class="line">bash: f1.txt: Permission denied</span><br><span class="line">[wang@centos8 data]<span class="variable">$exit</span></span><br><span class="line"><span class="built_in">exit</span></span><br><span class="line">[root@centos8 data]#groupmems -a wang -g admins</span><br><span class="line">[root@centos8 data]#<span class="built_in">id</span> wang</span><br><span class="line">uid=1000(wang) gid=1000(wang) <span class="built_in">groups</span>=1000(wang),1002(admins)</span><br><span class="line">[root@centos8 data]#su wang</span><br><span class="line">[wang@centos8 data]<span class="variable">$getfacl</span> f1.txt </span><br><span class="line"><span class="comment"># file: f1.txt</span></span><br><span class="line"><span class="comment"># owner: root</span></span><br><span class="line"><span class="comment"># group: root</span></span><br><span class="line">user::rwuser:wang:---</span><br><span class="line">group::r--</span><br><span class="line">group:admins:-wmask::rwother::r--</span><br><span class="line">[wang@centos8 data]<span class="variable">$cat</span> f1.txt</span><br><span class="line"><span class="built_in">cat</span>: f1.txt: Permission denied</span><br><span class="line">[wang@centos8 data]<span class="variable">$echo</span> wangdata2 &gt;&gt; f1.txt</span><br><span class="line">bash: f1.txt: Permission denied</span><br></pre></td></tr></table></figure>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">mount -o acl /directory</span><br><span class="line">getfacl file |directory</span><br><span class="line">setfacl -m u:wang:rwx file|directory</span><br><span class="line">setfacl -m g:admins:rw file| directory</span><br><span class="line">setfacl -x u:wang file |directory</span><br><span class="line"><span class="comment">#清除所有ACL权限</span></span><br><span class="line">setfacl -b file1 </span><br><span class="line"><span class="comment">#复制file1的acl权限给file2</span></span><br><span class="line">getfacl file1 | setfacl --set-file=- file2</span><br></pre></td></tr></table></figure>
+<p><strong>mask 权限</strong></p>
+<ul>
+<li>mask只影响除所有者和other的之外的人和组的最大权限</li>
+<li>mask需要与用户的权限进行逻辑与运算后，才能变成有限的权限(Effective Permission)</li>
+<li>用户或组的设置必须存在于mask权限设定范围内才会生效</li>
+</ul>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setfacl -m mask::rx file</span><br></pre></td></tr></table></figure>
+<p>范例:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">[root@centos8 data]#ll f1.txt</span><br><span class="line">-rw-rw-r--+ 1 root root 728 Dec 18 14:51 f1.txt</span><br><span class="line">[root@centos8 data]#<span class="built_in">chmod</span> g=r f1.txt</span><br><span class="line">[root@centos8 data]#ll f1.txt</span><br><span class="line">-rw-r--r--+ 1 root root 728 Dec 18 14:51 f1.txt</span><br><span class="line">[root@centos8 data]#getfacl f1.txt</span><br><span class="line"><span class="comment"># file: f1.txt</span></span><br><span class="line"><span class="comment"># owner: root</span></span><br><span class="line"><span class="comment"># group: root</span></span><br><span class="line">user::rwuser:wang:---</span><br><span class="line">group::r--</span><br><span class="line">group:admins:-w- <span class="comment">#effective:---</span></span><br><span class="line">mask::r--</span><br><span class="line">other::r--</span><br><span class="line">[root@centos8 data]#setfacl -m mask::rw f1.txt</span><br><span class="line">[root@centos8 data]#getfacl f1.txt</span><br><span class="line"><span class="comment"># file: f1.txt</span></span><br><span class="line"><span class="comment"># owner: root</span></span><br><span class="line"><span class="comment"># group: root</span></span><br><span class="line">user::rwuser:wang:---</span><br><span class="line">group::r--</span><br><span class="line">group:admins:-wmask::rwother::r--</span><br><span class="line">[root@centos8 data]#setfacl -m u:wang:rwx f1.txt</span><br><span class="line">[root@centos8 data]#getfacl f1.txt</span><br><span class="line"><span class="comment"># file: f1.txt</span></span><br><span class="line"><span class="comment"># owner: root</span></span><br><span class="line"><span class="comment"># group: root</span></span><br><span class="line">user::rwuser:wang:rwx</span><br><span class="line">group::r--</span><br><span class="line">group:admins:-wmask::rwx</span><br><span class="line">other::r--</span><br><span class="line">[root@centos8 data]#setfacl -m mask::rw f1.txt</span><br><span class="line">[root@centos8 data]#getfacl f1.txt</span><br><span class="line"><span class="comment"># file: f1.txt</span></span><br><span class="line"><span class="comment"># owner: root</span></span><br><span class="line"><span class="comment"># group: root</span></span><br><span class="line">user::rwuser:wang:rwx <span class="comment">#effective:rwgroup::r--</span></span><br><span class="line">group:admins:-wmask::rwother::r--</span><br></pre></td></tr></table></figure>
+<p>–set选项会把原有的ACL项都删除，用新的替代，需要注意的是一定要包含UGO的设置，不能象-m一样只是添加ACL就可以</p>
+<p>范例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setfacl --<span class="built_in">set</span> u::rw,u:wang:rw,g::r,o::- file1</span><br></pre></td></tr></table></figure>
+<div class="tbsm" style="margin-top:54px;">
+<div class="tbsm-top"><span><svg t="1674654360507" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="987" data-spm-anchor-id="a313x.7781069.0.i0" width="35" height="35"><path d="M410.49 97.74H155.08a56.74 56.74 0 0 0-56.84 56.73V410a56.84 56.84 0 0 0 56.84 56.84h255.41A56.83 56.83 0 0 0 467.32 410V154.58a56.83 56.83 0 0 0-56.83-56.84zM410.49 558.74H155.08a56.74 56.74 0 0 0-56.84 56.73V871a56.84 56.84 0 0 0 56.84 56.84h255.41A56.83 56.83 0 0 0 467.32 871V615.58a56.83 56.83 0 0 0-56.83-56.84zM871.49 558.74H616.08a56.74 56.74 0 0 0-56.84 56.73V871a56.84 56.84 0 0 0 56.84 56.84h255.41A56.83 56.83 0 0 0 928.32 871V615.58a56.83 56.83 0 0 0-56.83-56.84z" fill="#66EEFF" p-id="988"></path><path d="M410.49 558.74h-4.14A475 475 0 0 0 299.52 859.6a481.16 481.16 0 0 0 4.84 68.22h106.13A56.83 56.83 0 0 0 467.32 871V615.58a56.83 56.83 0 0 0-56.83-56.84zM871.49 558.74H616.08a56.74 56.74 0 0 0-56.84 56.73V871a56.84 56.84 0 0 0 56.84 56.84h255.41A56.83 56.83 0 0 0 928.32 871V615.58a56.83 56.83 0 0 0-56.83-56.84z" fill="#C2F8FF" p-id="989"></path></svg></span><span style="font-size:30px;"> 特别声明</span></div>
+<div class="tbsm-wz">千屹博客旗下的所有文章，是通过本人课堂学习和课外自学所精心整理的知识巨著<br/>难免会有出错的地方<br/>如果细心的你发现了小失误，可以在下方评论区告诉我，或者私信我！<br />非常感谢大家的热烈支持！</div>
+</div>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://blog.qianyios.top">严千屹</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yw.qianyios.top/posts/ab706382/">https://yw.qianyios.top/posts/ab706382/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://yw.qianyios.top" target="_blank">严千屹博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Mysql/">Mysql</a></div><div class="post-share"><div class="social-share" data-image="https://i0.hdslb.com/bfs/new_dyn/6e5783bede6cb070a7198aa4d4dc56fb697559838.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="/pluginsSrc/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="/pluginsSrc/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i>赞助</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wxzf.png" target="_blank"><img class="post-qr-code-img" src="/img/wxzf.png" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="/img/zfb.png" target="_blank"><img class="post-qr-code-img" src="/img/zfb.png" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E3%80%81%E7%BB%84%E5%92%8C%E6%9D%83%E9%99%90"><span class="toc-number">1.</span> <span class="toc-text">用户、组和权限</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux%E5%AE%89%E5%85%A8%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.1.</span> <span class="toc-text">Linux安全模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%88%B7"><span class="toc-number">1.1.1.</span> <span class="toc-text">用户</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E7%BB%84"><span class="toc-number">1.1.2.</span> <span class="toc-text">用户组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E5%92%8C%E7%BB%84%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">1.1.3.</span> <span class="toc-text">用户和组的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E4%B8%8A%E4%B8%8B%E6%96%87"><span class="toc-number">1.1.4.</span> <span class="toc-text">安全上下文</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E5%92%8C%E7%BB%84%E7%9A%84%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.</span> <span class="toc-text">用户和组的配置文件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E5%92%8C%E7%BB%84%E7%9A%84%E4%B8%BB%E8%A6%81%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.1.</span> <span class="toc-text">用户和组的主要配置文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#passwd%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc-number">1.2.2.</span> <span class="toc-text">passwd文件格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#shadow%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc-number">1.2.3.</span> <span class="toc-text">shadow文件格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#group%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc-number">1.2.4.</span> <span class="toc-text">group文件格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#gshdow%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc-number">1.2.5.</span> <span class="toc-text">gshdow文件格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C"><span class="toc-number">1.2.6.</span> <span class="toc-text">文件操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E5%92%8C%E7%BB%84%E7%AE%A1%E7%90%86%E5%91%BD%E4%BB%A4"><span class="toc-number">1.3.</span> <span class="toc-text">用户和组管理命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E5%88%9B%E5%BB%BA"><span class="toc-number">1.3.1.</span> <span class="toc-text">用户创建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E5%B1%9E%E6%80%A7%E4%BF%AE%E6%94%B9"><span class="toc-number">1.3.2.</span> <span class="toc-text">用户属性修改</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E7%94%A8%E6%88%B7"><span class="toc-number">1.3.3.</span> <span class="toc-text">删除用户</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%94%A8%E6%88%B7%E7%9B%B8%E5%85%B3%E7%9A%84ID%E4%BF%A1%E6%81%AF"><span class="toc-number">1.3.4.</span> <span class="toc-text">查看用户相关的ID信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%87%E6%8D%A2%E7%94%A8%E6%88%B7%E6%88%96%E4%BB%A5%E5%85%B6%E4%BB%96%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4"><span class="toc-number">1.3.5.</span> <span class="toc-text">切换用户或以其他用户身份执行命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E5%AF%86%E7%A0%81"><span class="toc-number">1.3.6.</span> <span class="toc-text">设置密码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E7%94%A8%E6%88%B7%E5%AF%86%E7%A0%81%E7%AD%96%E7%95%A5"><span class="toc-number">1.3.7.</span> <span class="toc-text">修改用户密码策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E7%BB%84"><span class="toc-number">1.3.8.</span> <span class="toc-text">创建组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E7%BB%84"><span class="toc-number">1.3.9.</span> <span class="toc-text">修改组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%84%E5%88%A0%E9%99%A4"><span class="toc-number">1.3.10.</span> <span class="toc-text">组删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9B%B4%E6%94%B9%E7%BB%84%E6%88%90%E5%91%98%E5%92%8C%E5%AF%86%E7%A0%81"><span class="toc-number">1.3.11.</span> <span class="toc-text">更改组成员和密码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9B%B4%E6%94%B9%E5%92%8C%E6%9F%A5%E7%9C%8B%E7%BB%84%E6%88%90%E5%91%98"><span class="toc-number">1.3.12.</span> <span class="toc-text">更改和查看组成员</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%83%E4%B9%A0"><span class="toc-number">1.3.13.</span> <span class="toc-text">练习</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86"><span class="toc-number">1.4.</span> <span class="toc-text">文件权限管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%89%80%E6%9C%89%E8%80%85%E5%92%8C%E5%B1%9E%E7%BB%84%E5%B1%9E%E6%80%A7%E6%93%8D%E4%BD%9C"><span class="toc-number">1.4.1.</span> <span class="toc-text">文件所有者和属组属性操作</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E6%96%87%E4%BB%B6%E7%9A%84%E6%89%80%E6%9C%89%E8%80%85chown"><span class="toc-number">1.4.1.1.</span> <span class="toc-text">设置文件的所有者chown</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E6%96%87%E4%BB%B6%E7%9A%84%E5%B1%9E%E7%BB%84%E4%BF%A1%E6%81%AFchgrp"><span class="toc-number">1.4.1.2.</span> <span class="toc-text">设置文件的属组信息chgrp</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90"><span class="toc-number">1.4.2.</span> <span class="toc-text">文件权限</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90%E8%AF%B4%E6%98%8E"><span class="toc-number">1.4.2.1.</span> <span class="toc-text">文件权限说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90chmod"><span class="toc-number">1.4.2.2.</span> <span class="toc-text">修改文件权限chmod</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B0%E5%BB%BA%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95%E7%9A%84%E9%BB%98%E8%AE%A4%E6%9D%83%E9%99%90"><span class="toc-number">1.4.3.</span> <span class="toc-text">新建文件和目录的默认权限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%B8%8A%E7%9A%84%E7%89%B9%E6%AE%8A%E6%9D%83%E9%99%90"><span class="toc-number">1.4.4.</span> <span class="toc-text">Linux文件系统上的特殊权限</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%B9%E6%AE%8A%E6%9D%83%E9%99%90SUID"><span class="toc-number">1.4.4.1.</span> <span class="toc-text">特殊权限SUID</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%B9%E6%AE%8A%E6%9D%83%E9%99%90SGID"><span class="toc-number">1.4.4.2.</span> <span class="toc-text">特殊权限SGID</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%B9%E6%AE%8A%E6%9D%83%E9%99%90-Sticky-%E4%BD%8D"><span class="toc-number">1.4.4.3.</span> <span class="toc-text">特殊权限 Sticky 位</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%B9%E6%AE%8A%E6%9D%83%E9%99%90%E6%95%B0%E5%AD%97%E6%B3%95"><span class="toc-number">1.4.4.4.</span> <span class="toc-text">特殊权限数字法</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E5%AE%9A%E6%96%87%E4%BB%B6%E7%89%B9%E6%AE%8A%E5%B1%9E%E6%80%A7"><span class="toc-number">1.4.5.</span> <span class="toc-text">设定文件特殊属性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6%E5%88%97%E8%A1%A8-ACL"><span class="toc-number">1.4.6.</span> <span class="toc-text">访问控制列表 ACL</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ACL%E6%9D%83%E9%99%90%E5%8A%9F%E8%83%BD"><span class="toc-number">1.4.6.1.</span> <span class="toc-text">ACL权限功能</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ACL%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4"><span class="toc-number">1.4.6.2.</span> <span class="toc-text">ACL相关命令</span></a></li></ol></li></ol></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div><div class="footer_custom_text"><span style="display: block; text-align: center; color: white;">严千屹博客</span>
+<a href="http://beian.miit.gov.cn/" target="_blank" rel="noopener" style="display: block; text-align: center; color: white; text-decoration: none; ">
+  ICP备案号:粤ICP备2024250479号
+</a>
+<span style="display: block; text-align: center; color: white;white-space: nowrap;">本站已加入：十年之约👇
+    <a href="https://www.foreverblog.cn/" target="_blank" style="display: block; text-align: center; text-decoration: none; "> <img src="https://img.foreverblog.cn/logo_en_default.png" alt="" style="width:auto;height:16px;"> </a>
+</span>
+<div class="post-reward" style="margin-top:11px;margin-bottom:20px"><div class="reward-button"><i class="fas fa-qrcode"></i>赞助</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wxzf.png" target="_blank"><img class="post-qr-code-img" src="/img/wxzf.png" alt="微信"></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="/img/zfb.png" target="_blank"><img class="post-qr-code-img" src="/img/zfb.png" alt="支付宝"></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div>
+</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/pluginsSrc/@fancyapps/ui/dist/fancybox/fancybox.umd.js"></script><script src="/pluginsSrc/instant.page/instantpage.js" type="module"></script><script src="/pluginsSrc/node-snackbar/dist/snackbar.min.js"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://twikoo.qianyios.top',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://twikoo.qianyios.top',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('https://s4.zstatic.net/ajax/libs/twikoo/1.6.39/twikoo.all.min.js').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Twikoo' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Twikoo' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="/pluginsSrc/butterfly-extsrc/dist/fireworks.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="/pluginsSrc/butterfly-extsrc/dist/canvas-nest.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
